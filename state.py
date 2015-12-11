@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#    otrmodule.py
 #
 # Copyright 2015 Bahtiar `kalkin-` Gadimov <bahtiar@gadimov.de>
 #
@@ -84,7 +83,7 @@ class OmemoState:
         return self.store.getLocalRegistrationId()
 
     def own_device_id_published(self):
-        return self.own_device_id in self.own_devices
+        return str(self.own_device_id) in self.own_devices
 
 #   def device_ids_for(self, contact):
 #       account = contact.account.name
