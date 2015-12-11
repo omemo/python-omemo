@@ -30,10 +30,14 @@ from .store.sqlite.liteaxolotlstore import LiteAxolotlStore
 DB_DIR = gajim.gajimpaths.data_root
 
 
-class OmemoState(object):
+class OmemoState:
     _COUNT_PREKEYS = 100
 
+    device_ids = {}
+    own_devices = []
+
     def __init__(self, name):
+        self.name = name
         self.db_name = 'omemo_' + name + '.db'
         db_file = os.path.join(DB_DIR, self.db_name)
         log.info('Opening the DB ' + db_file)
@@ -42,8 +46,10 @@ class OmemoState(object):
         if self.axolotl_intialiased():
             self._generate_axolotl_keys()
 
+        log.info(self.store.getLocalRegistrationId())
+
     def axolotl_intialiased(self):
-        return self.store.getLocalRegistrationId is None
+        return self.store.getLocalRegistrationId() is None
 
     def _generate_axolotl_keys(self):
         log.info("Generating Axolotl keys for " + self.db_name)
@@ -62,3 +68,34 @@ class OmemoState(object):
         log.info("Storing prekeys")
         for preKey in preKeys:
             self.store.storePreKey(preKey.getId(), preKey)
+
+    def add_devices(self, name, devices):
+        log.info('Saving devices for ' + name + ' → ' + str(devices))
+        self.device_ids[name] = devices
+
+    def add_own_devices(self, devices):
+        self.own_devices = devices
+
+    @property
+    def own_device_id(self):
+        own_id = self.store.getLocalRegistrationId()
+        assert own_id is not None, \
+            "Requested device_id but there is no generated"
+        return self.store.getLocalRegistrationId()
+
+    def own_device_id_published(self):
+        return self.own_device_id in self.own_devices
+
+#   def device_ids_for(self, contact):
+#       account = contact.account.name
+#       if account not in self.device_ids:
+#           log.debug('Account:' + str(account) + '¬∈ devices_ids')
+#           return None
+#       contact_jid = gajim.get_jid_without_resource(contact.get_full_jid())
+#       if contact_jid not in self.device_ids[account]:
+#           log.debug('Contact:' + contact_jid + '¬∈ devices_ids[' + account +
+#                     ']')
+#           return None
+#
+#       log.info(self.device_ids[account])
+#       return self.device_ids[account][contact_jid]
