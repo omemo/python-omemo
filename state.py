@@ -18,7 +18,7 @@
 #
 
 import os
-from base64 import b64decode, b64encode
+from base64 import b64encode
 
 from axolotl.protocol.prekeywhispermessage import PreKeyWhisperMessage
 from axolotl.protocol.whispermessage import WhisperMessage
@@ -129,8 +129,6 @@ class OmemoState:
         return result
 
     def decrypt_msg(self, key, iv, payload):
-        payload = b64decode(payload)
-        iv = b64decode(iv)
         result = aes_decrypt(key, iv, payload)
         log.info("Decrypted msg ⇒ " + result)
         return result
@@ -150,15 +148,14 @@ class OmemoState:
             return self.sessionCiphers[recipient_id]
 
     def handlePreKeyWhisperMessage(self, recipient_id, device_id, key):
-        preKeyWhisperMessage = PreKeyWhisperMessage(serialized=b64decode(key))
+        preKeyWhisperMessage = PreKeyWhisperMessage(serialized=key)
         sessionCipher = self.getSessionCipher(recipient_id, device_id)
         key = sessionCipher.decryptPkmsg(preKeyWhisperMessage)
         log.info('PreKeyWhisperMessage -> ' + str(key))
         return key
 
     def handleWhisperMessage(self, recipient_id, device_id, key):
-        log.info(b64decode(key))
-        whisperMessage = WhisperMessage(serialized=b64decode(key))
+        whisperMessage = WhisperMessage(serialized=key)
         sessionCipher = self.getSessionCipher(recipient_id, device_id)
         key = sessionCipher.decryptMsg(whisperMessage)
         log.info('WhisperMessage -> ' + str(key))

@@ -16,16 +16,19 @@
 # along with Gajim.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from base64 import b64encode
+import logging
+from base64 import b64decode, b64encode
 
 from nbxmpp.protocol import NS_PUBSUB, Iq
 from nbxmpp.simplexml import Node
 
 from common import gajim
+from plugins.helpers import log_calls
 
 NS_OMEMO = 'eu.siacs.conversations.axolotl'
 NS_DEVICE_LIST = NS_OMEMO + '.devicelist'
 NS_BUNDLES = NS_OMEMO + '.bundles'
+log = logging.getLogger('gajim.plugin_system.omemo')
 
 
 class PublishNode(Node):
@@ -64,7 +67,7 @@ class OmemoMessage(Node):
         header = Node('header', attrs={'sid': my_dev_id})
         header.addChild('key', attrs={'rid': dev_id}).addData(b64encode(key))
         header.addChild('iv').addData(b64encode(iv))
-        enc = Node('encrypted',  attrs={'xmlns': NS_OMEMO})
+        enc = Node('encrypted', attrs={'xmlns': NS_OMEMO})
         enc.addChild(node=header)
         enc.addChild('payload').addData(b64encode(payload))
         self.addChild(node=enc)
@@ -108,3 +111,80 @@ class BundleInformationAnnouncement(Iq):
             prekeys.addChild('preKeyPublic',
                              attrs={'preKeyId': key[0]}).addData(key[1])
         return result
+
+
+@log_calls('OmemoPlugin')
+def unpack_message(msg):
+    encrypted_node = msg.getTag('encrypted', namespace=NS_OMEMO)
+    if not encrypted_node:
+        log.debug('Message does not have encrypted node')
+
+    return unpack_encrypted(encrypted_node)
+
+
+@log_calls('OmemoPlugin')
+def unpack_encrypted(encrypted_node):
+    if not encrypted_node.getNamespace() == NS_OMEMO:
+        log.warn("Encrypted node with wrong NS")
+        return
+
+    header_node = encrypted_node.getTag('header')
+    if not header_node:
+        log.warn("OMEMO message without header")
+        return
+
+    if not header_node.getAttr('sid'):
+        log.warn("OMEMO message without sid in header")
+        return
+
+    sid = int(header_node.getAttr('sid'))
+
+    iv_node = header_node.getTag('iv')
+    if not iv_node:
+        log.warn("OMEMO message without iv")
+        return
+
+    iv = decode_data(iv_node)
+    if not iv:
+        log.warn("OMEMO message without iv data")
+
+    payload_node = encrypted_node.getTag('payload')
+    payload = None
+    if payload_node:
+        payload = decode_data(payload_node)
+
+    key_nodes = header_node.getTags('key')
+    if len(key_nodes) < 1:
+        log.warn("OMEMO message without keys")
+        return
+
+    keys = {}
+    for kn in key_nodes:
+        rid = kn.getAttr('rid')
+        if not rid:
+            log.warn('Omemo key without rid')
+            continue
+
+        if not kn.getData():
+            log.warn('Omemo key without data')
+            continue
+
+        keys[int(rid)] = decode_data(kn)
+
+    result = {'sid': sid, 'iv': iv, 'keys': keys, 'payload': payload}
+    log.debug('Parsed OMEMO message')
+    log.debug(result)
+    return result
+
+
+def decode_data(node):
+    data = node.getData()
+    log.debug(data)
+    if not data:
+        log.warn("No node data")
+        return
+    try:
+        return b64decode(data)
+    except:
+        log.warn('b64decode broken')
+        return
