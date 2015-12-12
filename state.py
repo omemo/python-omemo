@@ -75,13 +75,14 @@ class OmemoState:
 
     @property
     def own_device_id(self):
-        own_id = self.store.getLocalRegistrationId()
-        assert own_id is not None, \
+        reg_id = self.store.getLocalRegistrationId()
+        assert reg_id is not None, \
             "Requested device_id but there is no generated"
-        return self.store.getLocalRegistrationId()
+
+        return ((reg_id % 2147483646)+1)
 
     def own_device_id_published(self):
-        return str(self.own_device_id) in self.own_devices
+        return self.own_device_id in self.own_devices
 
     def device_ids_for(self, contact):
         account = contact.account.name
