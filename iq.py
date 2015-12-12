@@ -16,6 +16,8 @@
 # along with Gajim.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from base64 import b64encode
+
 from nbxmpp.protocol import NS_PUBSUB, Iq
 from nbxmpp.simplexml import Node
 
@@ -54,6 +56,18 @@ class DeviceListAnnouncement(Iq):
         pubsub = PubsubNode(publish)
 
         self.addChild(node=pubsub)
+
+
+class OmemoMessage(Node):
+    def __init__(self, contact_jid, key, iv, payload, dev_id, my_dev_id):
+        Node.__init__(self, 'message', attrs={'to': contact_jid})
+        header = Node('header', attrs={'sid': my_dev_id})
+        header.addChild('key', attrs={'rid': dev_id}).addData(b64encode(key))
+        header.addChild('iv').addData(b64encode(iv))
+        enc = Node('encrypted',  attrs={'xmlns': NS_OMEMO})
+        enc.addChild(node=header)
+        enc.addChild('payload').addData(b64encode(payload))
+        self.addChild(node=enc)
 
 
 class BundleInformationQuery(Iq):

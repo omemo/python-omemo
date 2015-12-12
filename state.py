@@ -18,9 +18,15 @@
 #
 
 import os
-from base64 import b64encode
+from base64 import b64decode, b64encode
 
+from axolotl.protocol.prekeywhispermessage import PreKeyWhisperMessage
+from axolotl.protocol.whispermessage import WhisperMessage
+# from axolotl.sessionbuilder import SessionBuilder
+from axolotl.sessioncipher import SessionCipher
 from axolotl.util.keyhelper import KeyHelper
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 from common import gajim
 from plugins.helpers import log
@@ -32,6 +38,7 @@ DB_DIR = gajim.gajimpaths.data_root
 
 class OmemoState:
     _COUNT_PREKEYS = 100
+    sessionCiphers = {}
 
     device_ids = {}
     own_devices = []
@@ -79,7 +86,7 @@ class OmemoState:
         assert reg_id is not None, \
             "Requested device_id but there is no generated"
 
-        return ((reg_id % 2147483646)+1)
+        return ((reg_id % 2147483646) + 1)
 
     def own_device_id_published(self):
         return self.own_device_id in self.own_devices
@@ -120,3 +127,52 @@ class OmemoState:
             'prekeys': prekeys
         }
         return result
+
+    def decrypt_msg(self, key, iv, payload):
+        payload = b64decode(payload)
+        iv = b64decode(iv)
+        tag = payload[-16:]
+        payload = payload[:-16]
+        log.info(payload)
+        decryptor = Cipher(
+            algorithms.AES(key),
+            modes.GCM(iv,
+                      tag=tag, ),
+            backend=default_backend()).decryptor()
+        result = decryptor.update(payload) + decryptor.finalize()
+        log.info("Decrypted msg ⇒ " + result)
+        return result
+
+    def encrypt_msg(self, key, iv, plaintext):
+        encryptor = Cipher(
+            algorithms.AES(key),
+            modes.GCM(iv),
+            backend=default_backend()).encryptor()
+        result = encryptor.update(plaintext) + encryptor.finalize()
+        result += encryptor.tag
+        log.info("Encrypted msg ⇒ " + result)
+        return result
+
+    def getSessionCipher(self, recipient_id, device_id):
+        if recipient_id in self.sessionCiphers:
+            return self.sessionCiphers[recipient_id]
+        else:
+            self.sessionCiphers[recipient_id] = SessionCipher(
+                self.store, self.store, self.store, self.store, recipient_id,
+                device_id)
+            return self.sessionCiphers[recipient_id]
+
+    def handlePreKeyWhisperMessage(self, recipient_id, device_id, key):
+        preKeyWhisperMessage = PreKeyWhisperMessage(serialized=b64decode(key))
+        sessionCipher = self.getSessionCipher(recipient_id, device_id)
+        key = sessionCipher.decryptPkmsg(preKeyWhisperMessage)
+        log.info('PreKeyWhisperMessage -> ' + str(key))
+        return key
+
+    def handleWhisperMessage(self, recipient_id, device_id, key):
+        log.info(b64decode(key))
+        whisperMessage = WhisperMessage(serialized=b64decode(key))
+        sessionCipher = self.getSessionCipher(recipient_id, device_id)
+        key = sessionCipher.decryptMsg(whisperMessage)
+        log.info('WhisperMessage -> ' + str(key))
+        return key
