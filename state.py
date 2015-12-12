@@ -97,12 +97,18 @@ class OmemoState:
 
     @property
     def bundle(self):
-        prekeys = [(k.getId(), b64encode(k.serialize()))
-                   for k in self.store.loadPreKeys()]
+        prekeys = [
+            (k.getId(), b64encode(k.getKeyPair().getPublicKey().serialize()))
+            for k in self.store.loadPreKeys()
+        ]
+
         identityKeyPair = self.store.getIdentityKeyPair()
+
         signedPreKey = KeyHelper.generateSignedPreKey(
             identityKeyPair, KeyHelper.getRandomSequence(65536))
+
         self.store.storeSignedPreKey(signedPreKey.getId(), signedPreKey)
+
         result = {
             'signedPreKeyId': signedPreKey.getId(),
             'signedPreKeyPublic':
