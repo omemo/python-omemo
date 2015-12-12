@@ -184,7 +184,6 @@ class OmemoState:
             self.session_ciphers[jid] = {}
 
         if device_id not in self.session_ciphers[jid]:
-            log.info('Saving sessin cipher')
             cipher = SessionCipher(self.store, self.store, self.store,
                                    self.store, jid, device_id)
             self.session_ciphers[jid][device_id] = cipher
