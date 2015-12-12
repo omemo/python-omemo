@@ -20,6 +20,8 @@
 import os
 from base64 import b64encode
 
+from axolotl.invalidmessageexception import InvalidMessageException
+from axolotl.invalidversionexception import InvalidVersionException
 from axolotl.protocol.prekeywhispermessage import PreKeyWhisperMessage
 from axolotl.protocol.whispermessage import WhisperMessage
 # from axolotl.sessionbuilder import SessionBuilder
@@ -128,9 +130,27 @@ class OmemoState:
         }
         return result
 
-    def decrypt_msg(self, key, iv, payload):
+    def decrypt_msg(self, msg_dict):
+        own_id = self.own_device_id
+        if own_id not in msg_dict['keys']:
+            log.warn('OMEMO message does not contain our device key')
+            return
+
+        iv = msg_dict['iv']
+        sid = msg_dict['sid']
+        sender_jid = msg_dict['sender_jid']
+        payload = msg_dict['payload']
+
+        encrypted_key = msg_dict['keys'][own_id]
+
+        try:
+            key = self.handlePreKeyWhisperMessage(sender_jid, sid,
+                                                  encrypted_key)
+        except (InvalidVersionException, InvalidMessageException):
+            key = self.handleWhisperMessage(sender_jid, sid, encrypted_key)
+
         result = aes_decrypt(key, iv, payload)
-        log.info("Decrypted msg ⇒ " + result)
+        log.debug("Decrypted msg ⇒ " + result)
         return result
 
     def encrypt_msg(self, key, iv, plaintext):
