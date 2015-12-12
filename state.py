@@ -17,6 +17,7 @@
 # along with Gajim.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import logging
 import os
 from base64 import b64encode
 
@@ -31,11 +32,12 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 from common import gajim
-from plugins.helpers import log, log_calls
+from plugins.helpers import log_calls
 
 from .store.sqlite.liteaxolotlstore import LiteAxolotlStore
 
 DB_DIR = gajim.gajimpaths.data_root
+log = logging.getLogger('gajim.plugin_system.omemo')
 
 
 class OmemoState:
@@ -153,31 +155,52 @@ class OmemoState:
         log.debug("Decrypted msg ⇒ " + result)
         return result
 
-    def encrypt_msg(self, key, iv, plaintext):
-        result = aes_encrypt(key, iv, plaintext)
-        log.info("Encrypted msg ⇒ " + result)
+    def create_msg(self, jid, plaintext):
+        key = os.urandom(16)
+        iv = os.urandom(16)
+        encrypted_keys = {}
+        session_ciphers = self.session_ciphers[jid]
+        if not session_ciphers:
+            log.warn('No session ciphers for ' + jid)
+            return
+
+        for rid, cipher in session_ciphers.items():
+            encrypted_keys[rid] = cipher.encrypt(key).serialize()
+
+        payload = aes_encrypt(key, iv, plaintext)
+
+        result = {'sid': self.own_device_id,
+                  'keys': encrypted_keys,
+                  'jid': jid,
+                  'iv': iv,
+                  'payload': payload}
+
+        log.debug('encrypted message')
+        log.debug(result)
         return result
 
-    def session_cipher(self, jid, device_id):
+    def get_session_cipher(self, jid, device_id):
         if jid not in self.session_ciphers:
             self.session_ciphers[jid] = {}
 
         if device_id not in self.session_ciphers[jid]:
-            self.session_ciphers[jid][device_id] = SessionCipher(
-                self.store, self.store, self.store, self.store, jid, device_id)
+            log.info('Saving sessin cipher')
+            cipher = SessionCipher(self.store, self.store, self.store,
+                                   self.store, jid, device_id)
+            self.session_ciphers[jid][device_id] = cipher
 
         return self.session_ciphers[jid][device_id]
 
     def handlePreKeyWhisperMessage(self, recipient_id, device_id, key):
         preKeyWhisperMessage = PreKeyWhisperMessage(serialized=key)
-        sessionCipher = self.session_cipher(recipient_id, device_id)
+        sessionCipher = self.get_session_cipher(recipient_id, device_id)
         key = sessionCipher.decryptPkmsg(preKeyWhisperMessage)
         log.info('PreKeyWhisperMessage -> ' + str(key))
         return key
 
     def handleWhisperMessage(self, recipient_id, device_id, key):
         whisperMessage = WhisperMessage(serialized=key)
-        sessionCipher = self.session_cipher(recipient_id, device_id)
+        sessionCipher = self.get_session_cipher(recipient_id, device_id)
         key = sessionCipher.decryptMsg(whisperMessage)
         log.info('WhisperMessage -> ' + str(key))
         return key

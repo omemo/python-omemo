@@ -62,14 +62,19 @@ class DeviceListAnnouncement(Iq):
 
 
 class OmemoMessage(Node):
-    def __init__(self, contact_jid, key, iv, payload, dev_id, my_dev_id):
-        Node.__init__(self, 'message', attrs={'to': contact_jid})
-        header = Node('header', attrs={'sid': my_dev_id})
-        header.addChild('key', attrs={'rid': dev_id}).addData(b64encode(key))
-        header.addChild('iv').addData(b64encode(iv))
+
+    def __init__(self, msg_dict):
+            # , contact_jid, key, iv, payload, dev_id, my_dev_id):
+        log.debug('Creating_msg' + str(msg_dict))
+        Node.__init__(self, 'message', attrs={'to': msg_dict['jid']})
+        header = Node('header', attrs={'sid': msg_dict['sid']})
+        for rid, key in msg_dict['keys'].items():
+            header.addChild('key', attrs={'rid': rid}).addData(b64encode(key))
+
+        header.addChild('iv').addData(b64encode(msg_dict['iv']))
         enc = Node('encrypted', attrs={'xmlns': NS_OMEMO})
         enc.addChild(node=header)
-        enc.addChild('payload').addData(b64encode(payload))
+        enc.addChild('payload').addData(b64encode(msg_dict['payload']))
         self.addChild(node=enc)
 
 
