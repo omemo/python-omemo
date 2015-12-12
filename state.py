@@ -29,7 +29,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 from common import gajim
-from plugins.helpers import log
+from plugins.helpers import log, log_calls
 
 from .store.sqlite.liteaxolotlstore import LiteAxolotlStore
 
@@ -131,25 +131,12 @@ class OmemoState:
     def decrypt_msg(self, key, iv, payload):
         payload = b64decode(payload)
         iv = b64decode(iv)
-        tag = payload[-16:]
-        payload = payload[:-16]
-        log.info(payload)
-        decryptor = Cipher(
-            algorithms.AES(key),
-            modes.GCM(iv,
-                      tag=tag, ),
-            backend=default_backend()).decryptor()
-        result = decryptor.update(payload) + decryptor.finalize()
+        result = aes_decrypt(key, iv, payload)
         log.info("Decrypted msg ⇒ " + result)
         return result
 
     def encrypt_msg(self, key, iv, plaintext):
-        encryptor = Cipher(
-            algorithms.AES(key),
-            modes.GCM(iv),
-            backend=default_backend()).encryptor()
-        result = encryptor.update(plaintext) + encryptor.finalize()
-        result += encryptor.tag
+        result = aes_encrypt(key, iv, plaintext)
         log.info("Encrypted msg ⇒ " + result)
         return result
 
@@ -176,3 +163,28 @@ class OmemoState:
         key = sessionCipher.decryptMsg(whisperMessage)
         log.info('WhisperMessage -> ' + str(key))
         return key
+
+
+@log_calls('OmemoPlugin')
+def aes_decrypt(key, iv, payload):
+    """ Use AES128 GCM with the given key and iv to decrypt the payload. """
+    data = payload[:-16]
+    tag = payload[-16:]
+    backend = default_backend()
+    decryptor = Cipher(
+        algorithms.AES(key),
+        modes.GCM(iv,
+                  tag=tag),
+        backend=backend).decryptor()
+    return decryptor.update(data) + decryptor.finalize()
+
+
+@log_calls('OmemoPlugin')
+def aes_encrypt(key, iv, payload):
+    """ Use AES128 GCM with the given key and iv to encrypt the payload. """
+    backend = default_backend()
+    encryptor = Cipher(
+        algorithms.AES(key),
+        modes.GCM(iv),
+        backend=backend).encryptor()
+    return encryptor.update(payload) + encryptor.finalize() + encryptor.tag
