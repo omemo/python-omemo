@@ -85,16 +85,14 @@ class OmemoState:
     def own_device_id_published(self):
         return str(self.own_device_id) in self.own_devices
 
-#   def device_ids_for(self, contact):
-#       account = contact.account.name
-#       if account not in self.device_ids:
-#           log.debug('Account:' + str(account) + '¬∈ devices_ids')
-#           return None
-#       contact_jid = gajim.get_jid_without_resource(contact.get_full_jid())
-#       if contact_jid not in self.device_ids[account]:
-#           log.debug('Contact:' + contact_jid + '¬∈ devices_ids[' + account +
-#                     ']')
-#           return None
-#
-#       log.info(self.device_ids[account])
-#       return self.device_ids[account][contact_jid]
+    def device_ids_for(self, contact):
+        account = contact.account.name
+        log.info(account + ' ⇒ Searching device_ids for contact ' +
+                 contact.jid)
+        if contact.jid not in self.device_ids:
+            log.debug(contact.jid + '¬∈ devices_ids[' + account + ']')
+            return None
+
+        log.info(account + ' ⇒ found device_ids ' + str(self.device_ids[
+            contact.jid]))
+        return self.device_ids[contact.jid]

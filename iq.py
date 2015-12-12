@@ -54,3 +54,13 @@ class DeviceListAnnouncement(Iq):
         pubsub = PubsubNode(publish)
 
         self.addChild(node=pubsub)
+
+
+class BundleInformationQuery(Iq):
+    def __init__(self, contact_jid, device_id):
+        id_ = gajim.get_an_id()
+        attrs = {'id': id_}
+        Iq.__init__(self, typ='get', attrs=attrs, to=contact_jid)
+        items = Node('items', attrs={'node': NS_BUNDLES + ':' + device_id})
+        pubsub = PubsubNode(items)
+        self.addChild(node=pubsub)
