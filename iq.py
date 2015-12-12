@@ -64,3 +64,33 @@ class BundleInformationQuery(Iq):
         items = Node('items', attrs={'node': NS_BUNDLES + ':' + device_id})
         pubsub = PubsubNode(items)
         self.addChild(node=pubsub)
+
+
+class BundleInformationAnnouncement(Iq):
+    def __init__(self, state_bundle, device_id):
+        id_ = gajim.get_an_id()
+        attrs = {'id': id_}
+        Iq.__init__(self, typ='set', attrs=attrs)
+        bundle_node = self.make_bundle_node(state_bundle)
+        publish = PublishNode(NS_BUNDLES + ':' + str(device_id), bundle_node)
+        pubsub = PubsubNode(publish)
+        self.addChild(node=pubsub)
+
+    def make_bundle_node(self, state_bundle):
+        result = Node('bundle', attrs={'xmlns': NS_OMEMO})
+        prekey_pub_node = result.addChild(
+            'signedPreKeyPublic',
+            attrs={'signedPreKeyId': state_bundle['signedPreKeyId']})
+        prekey_pub_node.addData(state_bundle['signedPreKeyPublic'])
+
+        prekey_sig_node = result.addChild('signedPreKeySignature')
+        prekey_sig_node.addData(state_bundle['signedPreKeySignature'])
+
+        identity_key_node = result.addChild('identityKey')
+        identity_key_node.addData(state_bundle['identityKey'])
+        prekeys = result.addChild('prekeys')
+
+        for key in state_bundle['prekeys']:
+            prekeys.addChild('preKeyPublic',
+                             attrs={'preKeyId': key[0]}).addData(key[1])
+        return result

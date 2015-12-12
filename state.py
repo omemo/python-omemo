@@ -18,6 +18,7 @@
 #
 
 import os
+from base64 import b64encode
 
 from axolotl.util.keyhelper import KeyHelper
 
@@ -56,10 +57,7 @@ class OmemoState:
         registrationId = KeyHelper.generateRegistrationId()
         preKeys = KeyHelper.generatePreKeys(KeyHelper.getRandomSequence(),
                                             self._COUNT_PREKEYS)
-        signedPreKey = KeyHelper.generateSignedPreKey(
-            identityKeyPair, KeyHelper.getRandomSequence(65536))
         self.store.storeLocalData(registrationId, identityKeyPair)
-        self.store.storeSignedPreKey(signedPreKey.getId(), signedPreKey)
 
         self._save_pre_keys(preKeys)
 
@@ -96,3 +94,22 @@ class OmemoState:
         log.info(account + ' ⇒ found device_ids ' + str(self.device_ids[
             contact.jid]))
         return self.device_ids[contact.jid]
+
+    @property
+    def bundle(self):
+        prekeys = [(k.getId(), b64encode(k.serialize()))
+                   for k in self.store.loadPreKeys()]
+        identityKeyPair = self.store.getIdentityKeyPair()
+        signedPreKey = KeyHelper.generateSignedPreKey(
+            identityKeyPair, KeyHelper.getRandomSequence(65536))
+        self.store.storeSignedPreKey(signedPreKey.getId(), signedPreKey)
+        result = {
+            'signedPreKeyId': signedPreKey.getId(),
+            'signedPreKeyPublic':
+            b64encode(signedPreKey.getKeyPair().getPublicKey().serialize()),
+            'signedPreKeySignature': b64encode(signedPreKey.getSignature()),
+            'identityKey':
+            b64encode(identityKeyPair.getPublicKey().serialize()),
+            'prekeys': prekeys
+        }
+        return result
