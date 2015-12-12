@@ -40,7 +40,7 @@ DB_DIR = gajim.gajimpaths.data_root
 
 class OmemoState:
     _COUNT_PREKEYS = 100
-    sessionCiphers = {}
+    session_ciphers = {}
 
     device_ids = {}
     own_devices = []
@@ -158,25 +158,26 @@ class OmemoState:
         log.info("Encrypted msg ⇒ " + result)
         return result
 
-    def getSessionCipher(self, recipient_id, device_id):
-        if recipient_id in self.sessionCiphers:
-            return self.sessionCiphers[recipient_id]
-        else:
-            self.sessionCiphers[recipient_id] = SessionCipher(
-                self.store, self.store, self.store, self.store, recipient_id,
-                device_id)
-            return self.sessionCiphers[recipient_id]
+    def session_cipher(self, jid, device_id):
+        if jid not in self.session_ciphers:
+            self.session_ciphers[jid] = {}
+
+        if device_id not in self.session_ciphers[jid]:
+            self.session_ciphers[jid][device_id] = SessionCipher(
+                self.store, self.store, self.store, self.store, jid, device_id)
+
+        return self.session_ciphers[jid][device_id]
 
     def handlePreKeyWhisperMessage(self, recipient_id, device_id, key):
         preKeyWhisperMessage = PreKeyWhisperMessage(serialized=key)
-        sessionCipher = self.getSessionCipher(recipient_id, device_id)
+        sessionCipher = self.session_cipher(recipient_id, device_id)
         key = sessionCipher.decryptPkmsg(preKeyWhisperMessage)
         log.info('PreKeyWhisperMessage -> ' + str(key))
         return key
 
     def handleWhisperMessage(self, recipient_id, device_id, key):
         whisperMessage = WhisperMessage(serialized=key)
-        sessionCipher = self.getSessionCipher(recipient_id, device_id)
+        sessionCipher = self.session_cipher(recipient_id, device_id)
         key = sessionCipher.decryptMsg(whisperMessage)
         log.info('WhisperMessage -> ' + str(key))
         return key
