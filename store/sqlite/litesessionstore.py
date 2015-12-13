@@ -7,7 +7,7 @@ class LiteSessionStore(SessionStore):
         """
         self.dbConn = dbConn
         dbConn.execute("CREATE TABLE IF NOT EXISTS sessions (_id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                       "recipient_id INTEGER UNIQUE, device_id INTEGER, record BLOB, timestamp INTEGER);")
+                       "recipient_id INTEGER, device_id INTEGER, record BLOB, timestamp INTEGER);")
 
 
     def loadSession(self, recipientId, deviceId):

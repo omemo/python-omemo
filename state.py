@@ -159,6 +159,8 @@ class OmemoState:
         key = os.urandom(16)
         iv = os.urandom(16)
         encrypted_keys = {}
+        for dev in self.device_ids[jid]:
+            self.get_session_cipher(jid, dev)
         session_ciphers = self.session_ciphers[jid]
         if not session_ciphers:
             log.warn('No session ciphers for ' + jid)
@@ -168,7 +170,7 @@ class OmemoState:
             try:
                 encrypted_keys[rid] = cipher.encrypt(key).serialize()
             except:
-                log.info('Failed ' + rid)
+                log.info('Failed ' + str(rid))
 
         if len(encrypted_keys) == 0:
             log_msg = 'Encrypted keys empty'
@@ -193,7 +195,7 @@ class OmemoState:
 
         if device_id not in self.session_ciphers[jid]:
             cipher = SessionCipher(self.store, self.store, self.store,
-                                   self.store, jid + str(device_id), 0)
+                                   self.store, jid, device_id)
             self.session_ciphers[jid][device_id] = cipher
 
         return self.session_ciphers[jid][device_id]

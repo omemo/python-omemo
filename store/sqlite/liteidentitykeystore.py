@@ -70,6 +70,7 @@ class LiteIdentityKeyStore(IdentityKeyStore):
         self.dbConn.commit()
 
     def isTrustedIdentity(self, recipientId, identityKey):
+        return True
         q = "SELECT public_key from identities WHERE recipient_id = ?"
         c = self.dbConn.cursor()
         c.execute(q, (recipientId, ))
