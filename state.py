@@ -165,7 +165,15 @@ class OmemoState:
             return
 
         for rid, cipher in session_ciphers.items():
-            encrypted_keys[rid] = cipher.encrypt(key).serialize()
+            try:
+                encrypted_keys[rid] = cipher.encrypt(key).serialize()
+            except:
+                log.info('Failed ' + rid)
+
+        if len(encrypted_keys) == 0:
+            log_msg = 'Encrypted keys empty'
+            log.error(log_msg)
+            raise NoValidSessions(log_msg)
 
         payload = aes_encrypt(key, iv, plaintext)
 
@@ -185,7 +193,7 @@ class OmemoState:
 
         if device_id not in self.session_ciphers[jid]:
             cipher = SessionCipher(self.store, self.store, self.store,
-                                   self.store, jid, device_id)
+                                   self.store, jid + str(device_id), 0)
             self.session_ciphers[jid][device_id] = cipher
 
         return self.session_ciphers[jid][device_id]
@@ -228,3 +236,7 @@ def aes_encrypt(key, iv, payload):
         modes.GCM(iv),
         backend=backend).encryptor()
     return encryptor.update(payload) + encryptor.finalize() + encryptor.tag
+
+
+class NoValidSessions(Exception):
+    pass
