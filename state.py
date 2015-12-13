@@ -34,7 +34,7 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from common import gajim
 from plugins.helpers import log_calls
 
-from .store.sqlite.liteaxolotlstore import LiteAxolotlStore
+from .store.liteaxolotlstore import LiteAxolotlStore
 
 DB_DIR = gajim.gajimpaths.data_root
 log = logging.getLogger('gajim.plugin_system.omemo')
