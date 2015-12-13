@@ -17,6 +17,7 @@
 #
 
 import logging
+import random
 from base64 import b64decode, b64encode
 
 from nbxmpp.protocol import NS_PUBSUB, Iq
@@ -27,7 +28,7 @@ from plugins.helpers import log_calls
 
 NS_OMEMO = 'eu.siacs.conversations.axolotl'
 NS_DEVICE_LIST = NS_OMEMO + '.devicelist'
-NS_BUNDLES = NS_OMEMO + '.bundles'
+NS_BUNDLES = NS_OMEMO + '.bundles:'
 log = logging.getLogger('gajim.plugin_system.omemo')
 
 
@@ -62,9 +63,8 @@ class DeviceListAnnouncement(Iq):
 
 
 class OmemoMessage(Node):
-
     def __init__(self, msg_dict):
-            # , contact_jid, key, iv, payload, dev_id, my_dev_id):
+        # , contact_jid, key, iv, payload, dev_id, my_dev_id):
         log.debug('Creating_msg' + str(msg_dict))
         Node.__init__(self, 'encrypted', attrs={'xmlns': NS_OMEMO})
         header = Node('header', attrs={'sid': msg_dict['sid']})
@@ -81,7 +81,7 @@ class BundleInformationQuery(Iq):
         id_ = gajim.get_an_id()
         attrs = {'id': id_}
         Iq.__init__(self, typ='get', attrs=attrs, to=contact_jid)
-        items = Node('items', attrs={'node': NS_BUNDLES + ':' + device_id})
+        items = Node('items', attrs={'node': NS_BUNDLES + str(device_id)})
         pubsub = PubsubNode(items)
         self.addChild(node=pubsub)
 
@@ -92,7 +92,7 @@ class BundleInformationAnnouncement(Iq):
         attrs = {'id': id_}
         Iq.__init__(self, typ='set', attrs=attrs)
         bundle_node = self.make_bundle_node(state_bundle)
-        publish = PublishNode(NS_BUNDLES + ':' + str(device_id), bundle_node)
+        publish = PublishNode(NS_BUNDLES + str(device_id), bundle_node)
         pubsub = PubsubNode(publish)
         self.addChild(node=pubsub)
 
@@ -123,6 +123,70 @@ def unpack_message(msg):
         log.debug('Message does not have encrypted node')
 
     return unpack_encrypted(encrypted_node)
+
+
+def unpack_device_bundle(bundle, device_id):
+    pubsub = bundle.getTag('pubsub', namespace=NS_PUBSUB)
+    if not pubsub:
+        log.warn('OMEMO device bundle has no pubsub node')
+        return
+    items = pubsub.getTag('items', attrs={'node': NS_BUNDLES + str(device_id)})
+    if not items:
+        log.warn('OMEMO device bundle has no publish node')
+        return
+
+    item = items.getTag('item')
+    if not item:
+        log.warn('OMEMO device bundle has no item node')
+        return
+
+    bundle = item.getTag('bundle', namespace=NS_OMEMO)
+    if not bundle:
+        log.warn('OMEMO device bundle has no bundle node')
+        return
+
+    signed_prekey_node = bundle.getTag('signedPreKeyPublic')
+    if not signed_prekey_node:
+        log.warn('OMEMO device bundle has no signedPreKeyPublic node')
+        return
+
+    result = {}
+    result['signedPreKeyPublic'] = decode_data(signed_prekey_node)
+    if not result['signedPreKeyPublic']:
+        log.warn('OMEMO device bundle has no signedPreKeyPublic data')
+        return
+
+    signed_signature_node = bundle.getTag('signedPreKeySignature')
+    if not signed_signature_node:
+        log.warn('OMEMO device bundle has no signedPreKeySignature node')
+        return
+
+    result['signedPreKeySignature'] = decode_data(signed_signature_node)
+    if not result['signedPreKeySignature']:
+        log.warn('OMEMO device bundle has no signedPreKeySignature data')
+        return
+
+    identity_key_node = bundle.getTag('identityKey')
+    if not identity_key_node:
+        log.warn('OMEMO device bundle has no identityKey node')
+        return
+
+    result['identityKey'] = decode_data(identity_key_node)
+    if not result['identityKey']:
+        log.warn('OMEMO device bundle has no identityKey data')
+        return
+
+    prekeys = bundle.getTag('prekeys')
+    if not prekeys or len(prekeys.getChildren()) == 0:
+        log.warn('OMEMO device bundle has no prekys')
+        return
+
+    picked_key_node = random.SystemRandom().choice(prekeys.getChildren())
+
+    result['preKeyPublic'] = decode_data(picked_key_node)
+    if not result['preKeyPublic']:
+        return
+    return result
 
 
 @log_calls('OmemoPlugin')

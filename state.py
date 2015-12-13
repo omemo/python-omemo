@@ -189,6 +189,14 @@ class OmemoState:
         log.debug(result)
         return result
 
+    def find_missing_sessions(self, recipient_id):
+        devices_with_sessions = set(self.store.getSubDeviceSessions(
+            recipient_id))
+        known_devices = set(self.device_ids[recipient_id])
+        missing_devices = known_devices - devices_with_sessions
+        log.info(missing_devices)
+        return missing_devices
+
     def get_session_cipher(self, jid, device_id):
         if jid not in self.session_ciphers:
             self.session_ciphers[jid] = {}
