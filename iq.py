@@ -132,7 +132,7 @@ def unpack_device_bundle(bundle, device_id):
         return
     items = pubsub.getTag('items', attrs={'node': NS_BUNDLES + str(device_id)})
     if not items:
-        log.warn('OMEMO device bundle has no publish node')
+        log.warn('OMEMO device bundle has no items node')
         return
 
     item = items.getTag('item')
@@ -155,6 +155,12 @@ def unpack_device_bundle(bundle, device_id):
     if not result['signedPreKeyPublic']:
         log.warn('OMEMO device bundle has no signedPreKeyPublic data')
         return
+
+    if not signed_prekey_node.getAttr('signedPreKeyId'):
+        log.warn('OMEMO device bundle has no signedPreKeyId')
+        return
+    result['signedPreKeyId'] = int(signed_prekey_node.getAttr(
+        'signedPreKeyId'))
 
     signed_signature_node = bundle.getTag('signedPreKeySignature')
     if not signed_signature_node:
@@ -182,6 +188,11 @@ def unpack_device_bundle(bundle, device_id):
         return
 
     picked_key_node = random.SystemRandom().choice(prekeys.getChildren())
+
+    if not picked_key_node.getAttr('preKeyId'):
+        log.warn('OMEMO PreKey has no id set')
+        return
+    result['preKeyId'] = int(picked_key_node.getAttr('preKeyId'))
 
     result['preKeyPublic'] = decode_data(picked_key_node)
     if not result['preKeyPublic']:

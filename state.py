@@ -21,12 +21,15 @@ import logging
 import os
 from base64 import b64encode
 
+from axolotl.ecc.djbec import DjbECPublicKey
+from axolotl.identitykey import IdentityKey
 from axolotl.invalidmessageexception import InvalidMessageException
 from axolotl.invalidversionexception import InvalidVersionException
 from axolotl.protocol.prekeywhispermessage import PreKeyWhisperMessage
 from axolotl.protocol.whispermessage import WhisperMessage
-# from axolotl.sessionbuilder import SessionBuilder
+from axolotl.sessionbuilder import SessionBuilder
 from axolotl.sessioncipher import SessionCipher
+from axolotl.state.prekeybundle import PreKeyBundle
 from axolotl.util.keyhelper import KeyHelper
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -61,6 +64,25 @@ class OmemoState:
 
     def axolotl_intialiased(self):
         return self.store.getLocalRegistrationId() is None
+
+    def build_session(self, recipient_id, device_id, bundle_dict):
+        sessionBuilder = SessionBuilder(self.store, self.store, self.store,
+                                        self.store, recipient_id, device_id)
+
+        registration_id = self.store.getLocalRegistrationId()
+
+        preKeyPublic = DjbECPublicKey(bundle_dict['preKeyPublic'][1:])
+
+        signedPreKeyPublic = DjbECPublicKey(bundle_dict['signedPreKeyPublic'][1:])
+        identityKey = IdentityKey(DjbECPublicKey(bundle_dict['identityKey'][1:]))
+
+        prekey_bundle = PreKeyBundle(
+            registration_id, device_id, bundle_dict['preKeyId'], preKeyPublic,
+            bundle_dict['signedPreKeyId'], signedPreKeyPublic,
+            bundle_dict['signedPreKeySignature'], identityKey)
+
+        sessionBuilder.processPreKeyBundle(prekey_bundle)
+        session = self.get_session_cipher(recipient_id, device_id)
 
     def _generate_axolotl_keys(self):
         log.info("Generating Axolotl keys for " + self.db_name)
