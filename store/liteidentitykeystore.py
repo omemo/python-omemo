@@ -1,11 +1,9 @@
 from axolotl.ecc.djbec import DjbECPrivateKey, DjbECPublicKey
 from axolotl.identitykey import IdentityKey
-from plugins.helpers import log
 from axolotl.identitykeypair import IdentityKeyPair
 from axolotl.state.identitykeystore import IdentityKeyStore
 
-# from axolotl.util.keyhelper import KeyHelper
-# from axolotl.ecc.curve import Curve
+from plugins.helpers import log
 
 
 class LiteIdentityKeyStore(IdentityKeyStore):
@@ -16,16 +14,10 @@ class LiteIdentityKeyStore(IdentityKeyStore):
         self.dbConn = dbConn
         dbConn.execute(
             "CREATE TABLE IF NOT EXISTS identities (" +
-            "_id INTEGER PRIMARY KEY AUTOINCREMENT," +
-            "recipient_id INTEGER UNIQUE," +
+            "_id INTEGER PRIMARY KEY AUTOINCREMENT," + "recipient_id TEXT," +
             "registration_id INTEGER, public_key BLOB, private_key BLOB," +
-            "next_prekey_id INTEGER, timestamp INTEGER);")
-
-        # identityKeyPairKeys = Curve.generateKeyPair()
-        # self.identityKeyPair = IdentityKeyPair(
-        # IdentityKey(identityKeyPairKeys.getPublicKey()),
-        # identityKeyPairKeys.getPrivateKey())
-        # self.localRegistrationId = KeyHelper.generateRegistrationId()
+            "next_prekey_id INTEGER, timestamp INTEGER, " +
+            "UNIQUE(recipient_id, registration_id));")
 
     def getIdentityKeyPair(self):
         q = "SELECT public_key, private_key FROM identities " + \

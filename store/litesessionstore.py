@@ -1,14 +1,18 @@
-from axolotl.state.sessionstore import SessionStore
 from axolotl.state.sessionrecord import SessionRecord
+from axolotl.state.sessionstore import SessionStore
+
+
 class LiteSessionStore(SessionStore):
     def __init__(self, dbConn):
         """
         :type dbConn: Connection
         """
         self.dbConn = dbConn
-        dbConn.execute("CREATE TABLE IF NOT EXISTS sessions (_id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                       "recipient_id INTEGER, device_id INTEGER, record BLOB, timestamp INTEGER);")
-
+        dbConn.execute("CREATE TABLE IF NOT EXISTS sessions (" +
+                       "_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                       "recipient_id TEXT," + "device_id INTEGER," +
+                       "record BLOB," + "timestamp INTEGER, " +
+                       "UNIQUE(recipient_id, device_id));")
 
     def loadSession(self, recipientId, deviceId):
         q = "SELECT record FROM sessions WHERE recipient_id = ? AND device_id = ?"
@@ -24,7 +28,7 @@ class LiteSessionStore(SessionStore):
     def getSubDeviceSessions(self, recipientId):
         q = "SELECT device_id from sessions WHERE recipient_id = ?"
         c = self.dbConn.cursor()
-        c.execute(q, (recipientId,))
+        c.execute(q, (recipientId, ))
         result = c.fetchall()
 
         deviceIds = [r[0] for r in result]
@@ -53,5 +57,5 @@ class LiteSessionStore(SessionStore):
 
     def deleteAllSessions(self, recipientId):
         q = "DELETE FROM sessions WHERE recipient_id = ?"
-        self.dbConn.cursor().execute(q, (recipientId,))
+        self.dbConn.cursor().execute(q, (recipientId, ))
         self.dbConn.commit()
