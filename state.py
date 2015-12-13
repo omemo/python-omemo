@@ -73,8 +73,10 @@ class OmemoState:
 
         preKeyPublic = DjbECPublicKey(bundle_dict['preKeyPublic'][1:])
 
-        signedPreKeyPublic = DjbECPublicKey(bundle_dict['signedPreKeyPublic'][1:])
-        identityKey = IdentityKey(DjbECPublicKey(bundle_dict['identityKey'][1:]))
+        signedPreKeyPublic = DjbECPublicKey(bundle_dict['signedPreKeyPublic'][
+            1:])
+        identityKey = IdentityKey(DjbECPublicKey(bundle_dict['identityKey'][
+            1:]))
 
         prekey_bundle = PreKeyBundle(
             registration_id, device_id, bundle_dict['preKeyId'], preKeyPublic,
@@ -82,7 +84,7 @@ class OmemoState:
             bundle_dict['signedPreKeySignature'], identityKey)
 
         sessionBuilder.processPreKeyBundle(prekey_bundle)
-        session = self.get_session_cipher(recipient_id, device_id)
+        self.get_session_cipher(recipient_id, device_id)
 
     def _generate_axolotl_keys(self):
         log.info("Generating Axolotl keys for " + self.db_name)
@@ -215,6 +217,14 @@ class OmemoState:
         devices_with_sessions = set(self.store.getSubDeviceSessions(
             recipient_id))
         known_devices = set(self.device_ids[recipient_id])
+        missing_devices = known_devices - devices_with_sessions
+        log.info(missing_devices)
+        return missing_devices
+
+    def find_own_missing_sessions(self, recipient_id):
+        devices_with_sessions = set(self.store.getSubDeviceSessions(
+            recipient_id))
+        known_devices = set(self.own_devices) - {self.own_device_id}
         missing_devices = known_devices - devices_with_sessions
         log.info(missing_devices)
         return missing_devices
