@@ -66,16 +66,14 @@ class OmemoMessage(Node):
     def __init__(self, msg_dict):
             # , contact_jid, key, iv, payload, dev_id, my_dev_id):
         log.debug('Creating_msg' + str(msg_dict))
-        Node.__init__(self, 'message', attrs={'to': msg_dict['jid']})
+        Node.__init__(self, 'encrypted', attrs={'xmlns': NS_OMEMO})
         header = Node('header', attrs={'sid': msg_dict['sid']})
         for rid, key in msg_dict['keys'].items():
             header.addChild('key', attrs={'rid': rid}).addData(b64encode(key))
 
         header.addChild('iv').addData(b64encode(msg_dict['iv']))
-        enc = Node('encrypted', attrs={'xmlns': NS_OMEMO})
-        enc.addChild(node=header)
-        enc.addChild('payload').addData(b64encode(msg_dict['payload']))
-        self.addChild(node=enc)
+        self.addChild(node=header)
+        self.addChild('payload').addData(b64encode(msg_dict['payload']))
 
 
 class BundleInformationQuery(Iq):
