@@ -31,8 +31,8 @@ from axolotl.sessionbuilder import SessionBuilder
 from axolotl.sessioncipher import SessionCipher
 from axolotl.state.prekeybundle import PreKeyBundle
 from axolotl.util.keyhelper import KeyHelper
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
 
 from common import gajim
 from plugins.helpers import log_calls
@@ -178,8 +178,8 @@ class OmemoState:
         return result
 
     def create_msg(self, jid, plaintext):
-        key = os.urandom(16)
-        iv = os.urandom(16)
+        key = get_random_bytes(16)
+        iv = get_random_bytes(16)
         encrypted_keys = {}
 
         devices_list = self.device_list_for(jid)
@@ -268,28 +268,24 @@ class OmemoState:
 
 
 @log_calls('OmemoPlugin')
-def aes_decrypt(key, iv, payload):
+def aes_decrypt(key, nonce, payload):
     """ Use AES128 GCM with the given key and iv to decrypt the payload. """
-    data = payload[:-16]
-    tag = payload[-16:]
-    backend = default_backend()
-    decryptor = Cipher(
-        algorithms.AES(key),
-        modes.GCM(iv,
-                  tag=tag),
-        backend=backend).decryptor()
-    return decryptor.update(data) + decryptor.finalize()
+    ciphertext = payload[:-16]
+    mac = payload[-16:]
+    cipher = AES.new(key, AES.MODE_GCM, nonce)
+    plaintext = cipher.decrypt(ciphertext)
+    try:
+        cipher.verify(mac)
+    except ValueError:
+        log.error('Could not authenticate the message')
+    return plaintext
 
 
 @log_calls('OmemoPlugin')
-def aes_encrypt(key, iv, payload):
+def aes_encrypt(key, nonce, plaintext):
     """ Use AES128 GCM with the given key and iv to encrypt the payload. """
-    backend = default_backend()
-    encryptor = Cipher(
-        algorithms.AES(key),
-        modes.GCM(iv),
-        backend=backend).encryptor()
-    return encryptor.update(payload) + encryptor.finalize() + encryptor.tag
+    cipher = AES.new(key, AES.MODE_GCM, nonce)
+    return cipher.encrypt(plaintext) + cipher.digest()
 
 
 class NoValidSessions(Exception):
