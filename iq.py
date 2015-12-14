@@ -266,3 +266,7 @@ def decode_data(node):
     except:
         log.warn('b64decode broken')
         return
+
+
+def successful(stanza):
+    return stanza.getAttr('type') == 'result'
