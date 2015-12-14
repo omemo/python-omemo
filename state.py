@@ -45,6 +45,7 @@ log = logging.getLogger('gajim.plugin_system.omemo')
 class OmemoState:
     _COUNT_PREKEYS = 100
     session_ciphers = {}
+    omemo_enabled = set()
 
     device_ids = {}
     own_devices = []
