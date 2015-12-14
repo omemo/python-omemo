@@ -24,7 +24,7 @@ from base64 import b64encode
 from axolotl.ecc.djbec import DjbECPublicKey
 from axolotl.identitykey import IdentityKey
 from axolotl.invalidmessageexception import InvalidMessageException
-from axolotl.invalidversionexception import InvalidVersionException
+from axolotl.invalidversionexception import InvalidVersionException, NoSessionException
 from axolotl.protocol.prekeywhispermessage import PreKeyWhisperMessage
 from axolotl.protocol.whispermessage import WhisperMessage
 from axolotl.sessionbuilder import SessionBuilder
@@ -171,13 +171,18 @@ class OmemoState:
             key = self.handlePreKeyWhisperMessage(sender_jid, sid,
                                                   encrypted_key)
         except (InvalidVersionException, InvalidMessageException):
-            key = self.handleWhisperMessage(sender_jid, sid, encrypted_key)
+	    try:
+            	key = self.handleWhisperMessage(sender_jid, sid, encrypted_key)
+	    except(NoSessionException, InvalidMessageException) as e:
+		log.error('No Session found ' + e.message)
+		log.error('sender_jid →  ' + str(sender_jid) + ' sid =>' + str(sid))
+		return
 
         result = aes_decrypt(key, iv, payload)
         log.debug("Decrypted msg ⇒ " + result)
         return result
 
-    def create_msg(self, jid, plaintext):
+    def create_msg(self, from_jid, jid, plaintext):
         key = get_random_bytes(16)
         iv = get_random_bytes(16)
         encrypted_keys = {}
@@ -193,6 +198,13 @@ class OmemoState:
         if not session_ciphers:
             log.warn('No session ciphers for ' + jid)
             return
+
+	my_other_devices = set(self.own_devices) - set({self.own_device_id})
+	for dev in my_other_devices:
+	    self.get_session_cipher(from_jid, dev)
+
+        session_ciphers = merge_two_dicts(session_ciphers, self.session_ciphers[from_jid])
+
 
         for rid, cipher in session_ciphers.items():
             try:
@@ -267,3 +279,10 @@ class OmemoState:
         key = sessionCipher.decryptMsg(whisperMessage)
         log.debug('WhisperMessage -> ' + str(key))
         return key
+
+
+def merge_two_dicts(x, y):
+    '''Given two dicts, merge them into a new dict as a shallow copy.'''
+    z = x.copy()
+    z.update(y)
+    return z
