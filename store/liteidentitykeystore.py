@@ -3,8 +3,6 @@ from axolotl.identitykey import IdentityKey
 from axolotl.identitykeypair import IdentityKeyPair
 from axolotl.state.identitykeystore import IdentityKeyStore
 
-from plugins.helpers import log
-
 
 class LiteIdentityKeyStore(IdentityKeyStore):
     def __init__(self, dbConn):
@@ -26,7 +24,6 @@ class LiteIdentityKeyStore(IdentityKeyStore):
         c.execute(q)
         result = c.fetchone()
 
-        log.info(result)
         publicKey, privateKey = result
         return IdentityKeyPair(
             IdentityKey(DjbECPublicKey(publicKey[1:])),

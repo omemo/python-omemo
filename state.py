@@ -54,13 +54,11 @@ class OmemoState:
         self.name = name
         self.db_name = 'omemo_' + name + '.db'
         db_file = os.path.join(DB_DIR, self.db_name)
-        log.info('Opening the DB ' + db_file)
+        log.debug('Opening the DB ' + db_file)
         self.store = LiteAxolotlStore(db_file)
 
         if self.axolotl_intialiased():
             self._generate_axolotl_keys()
-
-        log.info(self.store.getLocalRegistrationId())
 
     def axolotl_intialiased(self):
         return self.store.getLocalRegistrationId() is None
@@ -97,12 +95,12 @@ class OmemoState:
         self._save_pre_keys(preKeys)
 
     def _save_pre_keys(self, preKeys):
-        log.info("Storing prekeys")
+        log.debug("Storing prekeys")
         for preKey in preKeys:
             self.store.storePreKey(preKey.getId(), preKey)
 
     def add_devices(self, name, devices):
-        log.info('Saving devices for ' + name + ' → ' + str(devices))
+        log.debug('Saving devices for ' + name + ' → ' + str(devices))
         self.device_ids[name] = devices
 
     def add_own_devices(self, devices):
@@ -121,13 +119,13 @@ class OmemoState:
 
     def device_ids_for(self, contact):
         account = contact.account.name
-        log.info(account + ' ⇒ Searching device_ids for contact ' +
-                 contact.jid)
+        log.debug(account + ' ⇒ Searching device_ids for contact ' +
+                  contact.jid)
         if contact.jid not in self.device_ids:
             log.debug(contact.jid + '¬∈ devices_ids[' + account + ']')
             return None
 
-        log.info(account + ' ⇒ found device_ids ' + str(self.device_ids[
+        log.debug(account + ' ⇒ found device_ids ' + str(self.device_ids[
             contact.jid]))
         return self.device_ids[contact.jid]
 
@@ -194,7 +192,8 @@ class OmemoState:
             try:
                 encrypted_keys[rid] = cipher.encrypt(key).serialize()
             except:
-                log.info('Failed ' + str(rid))
+                log.warn(self.name + ' → Failed to find key for device ' + str(
+                    rid))
 
         if len(encrypted_keys) == 0:
             log_msg = 'Encrypted keys empty'
@@ -218,7 +217,8 @@ class OmemoState:
             recipient_id))
         known_devices = set(self.device_ids[recipient_id])
         missing_devices = known_devices - devices_with_sessions
-        log.info(missing_devices)
+        log.debug(self.name + ' → Missing device sessions: ' + str(
+            missing_devices))
         return missing_devices
 
     def find_own_missing_sessions(self, recipient_id):
@@ -226,7 +226,8 @@ class OmemoState:
             recipient_id))
         known_devices = set(self.own_devices) - {self.own_device_id}
         missing_devices = known_devices - devices_with_sessions
-        log.info(missing_devices)
+        log.debug(self.name + ' → Missing device sessions: ' + str(
+            missing_devices))
         return missing_devices
 
     def get_session_cipher(self, jid, device_id):
@@ -244,14 +245,14 @@ class OmemoState:
         preKeyWhisperMessage = PreKeyWhisperMessage(serialized=key)
         sessionCipher = self.get_session_cipher(recipient_id, device_id)
         key = sessionCipher.decryptPkmsg(preKeyWhisperMessage)
-        log.info('PreKeyWhisperMessage -> ' + str(key))
+        log.debug('PreKeyWhisperMessage -> ' + str(key))
         return key
 
     def handleWhisperMessage(self, recipient_id, device_id, key):
         whisperMessage = WhisperMessage(serialized=key)
         sessionCipher = self.get_session_cipher(recipient_id, device_id)
         key = sessionCipher.decryptMsg(whisperMessage)
-        log.info('WhisperMessage -> ' + str(key))
+        log.debug('WhisperMessage -> ' + str(key))
         return key
 
 
