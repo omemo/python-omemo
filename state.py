@@ -181,7 +181,13 @@ class OmemoState:
         key = os.urandom(16)
         iv = os.urandom(16)
         encrypted_keys = {}
-        for dev in self.device_ids[jid]:
+
+        devices_list = self.device_list_for(jid)
+        if len(devices_list) == 0:
+            log.error(self.name + ' → No known devices')
+            return
+
+        for dev in devices_list:
             self.get_session_cipher(jid, dev)
         session_ciphers = self.session_ciphers[jid]
         if not session_ciphers:
@@ -212,10 +218,15 @@ class OmemoState:
         log.debug(result)
         return result
 
+    def device_list_for(self, jid):
+        if jid not in self.device_ids:
+            return []
+        return set(self.device_ids[jid])
+
     def find_missing_sessions(self, recipient_id):
         devices_with_sessions = set(self.store.getSubDeviceSessions(
             recipient_id))
-        known_devices = set(self.device_ids[recipient_id])
+        known_devices = self.device_list_for(recipient_id)
         missing_devices = known_devices - devices_with_sessions
         log.debug(self.name + ' → Missing device sessions: ' + str(
             missing_devices))
