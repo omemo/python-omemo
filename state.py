@@ -31,11 +31,10 @@ from axolotl.sessionbuilder import SessionBuilder
 from axolotl.sessioncipher import SessionCipher
 from axolotl.state.prekeybundle import PreKeyBundle
 from axolotl.util.keyhelper import KeyHelper
-from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 
 from common import gajim
-from plugins.helpers import log_calls
+from .aes_gcm import aes_encrypt, aes_decrypt, NoValidSessions
 
 from .store.liteaxolotlstore import LiteAxolotlStore
 
@@ -207,6 +206,8 @@ class OmemoState:
             raise NoValidSessions(log_msg)
 
         payload = aes_encrypt(key, iv, plaintext)
+        log.info('Payload')
+        log.info(payload)
 
         result = {'sid': self.own_device_id,
                   'keys': encrypted_keys,
@@ -265,28 +266,3 @@ class OmemoState:
         key = sessionCipher.decryptMsg(whisperMessage)
         log.debug('WhisperMessage -> ' + str(key))
         return key
-
-
-@log_calls('OmemoPlugin')
-def aes_decrypt(key, nonce, payload):
-    """ Use AES128 GCM with the given key and iv to decrypt the payload. """
-    ciphertext = payload[:-16]
-    mac = payload[-16:]
-    cipher = AES.new(key, AES.MODE_GCM, nonce)
-    plaintext = cipher.decrypt(ciphertext)
-    try:
-        cipher.verify(mac)
-    except ValueError:
-        log.error('Could not authenticate the message')
-    return plaintext
-
-
-@log_calls('OmemoPlugin')
-def aes_encrypt(key, nonce, plaintext):
-    """ Use AES128 GCM with the given key and iv to encrypt the payload. """
-    cipher = AES.new(key, AES.MODE_GCM, nonce)
-    return cipher.encrypt(plaintext) + cipher.digest()
-
-
-class NoValidSessions(Exception):
-    pass
