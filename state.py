@@ -220,7 +220,7 @@ class OmemoState:
 
     def device_list_for(self, jid):
         if jid not in self.device_ids:
-            return []
+            return set()
         return set(self.device_ids[jid])
 
     def find_missing_sessions(self, recipient_id):
