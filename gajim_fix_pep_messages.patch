@@ -1,0 +1,12 @@
+diff -r 5253377a8628 src/common/connection_handlers_events.py
+--- a/src/common/connection_handlers_events.py	Sat Sep 26 15:58:33 2015 +0200
++++ b/src/common/connection_handlers_events.py	Mon Dec 14 17:36:02 2015 +0100
+@@ -1892,6 +1892,8 @@
+                 if entry:
+                     gajim.nec.push_incoming_event(AtomEntryReceived(None,
+                         conn=self.conn, node=entry))
++                else:
++                    return
+         raise nbxmpp.NodeProcessed
+ 
+ class AtomEntryReceived(nec.NetworkIncomingEvent):
