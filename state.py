@@ -250,9 +250,9 @@ class OmemoState:
             [int]
                 A list of device_ids
         """
-        devices_with_sessions = set(self.store.getSubDeviceSessions(jid))
         known_devices = self.device_list_for(jid)
-        missing_devices = known_devices - devices_with_sessions
+        missing_devices = [dev for dev in known_devices
+                           if not self.store.containsSession(jid, dev)]
         log.debug(self.name + ' → Missing device sessions: ' + str(
             missing_devices))
         return missing_devices
@@ -270,9 +270,9 @@ class OmemoState:
             [int]
                 A list of device_ids
         """
-        devices_with_sessions = set(self.store.getSubDeviceSessions(own_jid))
         known_devices = set(self.own_devices) - {self.own_device_id}
-        missing_devices = known_devices - devices_with_sessions
+        missing_devices = [dev for dev in known_devices
+                           if not self.store.containsSession(own_jid, dev)]
         log.debug(self.name + ' → Missing device sessions: ' + str(
             missing_devices))
         return missing_devices
