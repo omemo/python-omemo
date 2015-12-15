@@ -24,7 +24,8 @@ from base64 import b64encode
 from axolotl.ecc.djbec import DjbECPublicKey
 from axolotl.identitykey import IdentityKey
 from axolotl.invalidmessageexception import InvalidMessageException
-from axolotl.invalidversionexception import InvalidVersionException, NoSessionException
+from axolotl.invalidversionexception import (InvalidVersionException,
+                                             NoSessionException)
 from axolotl.protocol.prekeywhispermessage import PreKeyWhisperMessage
 from axolotl.protocol.whispermessage import WhisperMessage
 from axolotl.sessionbuilder import SessionBuilder
@@ -34,8 +35,8 @@ from axolotl.util.keyhelper import KeyHelper
 from Crypto.Random import get_random_bytes
 
 from common import gajim
-from .aes_gcm import aes_encrypt, aes_decrypt, NoValidSessions
 
+from .aes_gcm import NoValidSessions, aes_decrypt, aes_encrypt
 from .store.liteaxolotlstore import LiteAxolotlStore
 
 DB_DIR = gajim.gajimpaths.data_root
@@ -171,12 +172,13 @@ class OmemoState:
             key = self.handlePreKeyWhisperMessage(sender_jid, sid,
                                                   encrypted_key)
         except (InvalidVersionException, InvalidMessageException):
-	    try:
-            	key = self.handleWhisperMessage(sender_jid, sid, encrypted_key)
-	    except(NoSessionException, InvalidMessageException) as e:
-		log.error('No Session found ' + e.message)
-		log.error('sender_jid →  ' + str(sender_jid) + ' sid =>' + str(sid))
-		return
+            try:
+                key = self.handleWhisperMessage(sender_jid, sid, encrypted_key)
+            except (NoSessionException, InvalidMessageException) as e:
+                log.error('No Session found ' + e.message)
+                log.error('sender_jid →  ' + str(sender_jid) + ' sid =>' + str(
+                    sid))
+                return
 
         result = aes_decrypt(key, iv, payload)
         log.debug("Decrypted msg ⇒ " + result)
@@ -199,12 +201,10 @@ class OmemoState:
             log.warn('No session ciphers for ' + jid)
             return
 
-	my_other_devices = set(self.own_devices) - set({self.own_device_id})
-	for dev in my_other_devices:
-	    self.get_session_cipher(from_jid, dev)
-
-        session_ciphers = merge_two_dicts(session_ciphers, self.session_ciphers[from_jid])
-
+        my_other_devices = set(self.own_devices) - set({self.own_device_id})
+        for dev in my_other_devices:
+            cipher = self.get_session_cipher(from_jid, dev)
+            encrypted_keys[dev] = cipher.encrypt(key).serialize()
 
         for rid, cipher in session_ciphers.items():
             try:
@@ -279,10 +279,3 @@ class OmemoState:
         key = sessionCipher.decryptMsg(whisperMessage)
         log.debug('WhisperMessage -> ' + str(key))
         return key
-
-
-def merge_two_dicts(x, y):
-    '''Given two dicts, merge them into a new dict as a shallow copy.'''
-    z = x.copy()
-    z.update(y)
-    return z
