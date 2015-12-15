@@ -277,7 +277,10 @@ def unpack_device_list_update(event):
 
     items = event_node.getTag('items', {'node': NS_DEVICE_LIST})
     if not items or len(items.getChildren()) != 1:
-        log.warn(account + ' → Device list update items node empty!')
+        log.debug(
+            account +
+            ' → Device list update items node empty or not omemo device update'
+            )
         return result
 
     list_node = items.getChildren()[0].getTag('list')
