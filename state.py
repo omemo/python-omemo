@@ -237,18 +237,40 @@ class OmemoState:
             return set()
         return set(self.device_ids[jid])
 
-    def find_missing_sessions(self, recipient_id):
-        devices_with_sessions = set(self.store.getSubDeviceSessions(
-            recipient_id))
-        known_devices = self.device_list_for(recipient_id)
+    def devices_without_sessions(self, jid):
+        """ List device_ids for the given jid which have no axolotl session.
+
+            Parameters
+            ----------
+            jid : string
+                The contacts jid
+
+            Returns
+            -------
+            [int]
+                A list of device_ids
+        """
+        devices_with_sessions = set(self.store.getSubDeviceSessions(jid))
+        known_devices = self.device_list_for(jid)
         missing_devices = known_devices - devices_with_sessions
         log.debug(self.name + ' → Missing device sessions: ' + str(
             missing_devices))
         return missing_devices
 
-    def find_own_missing_sessions(self, recipient_id):
-        devices_with_sessions = set(self.store.getSubDeviceSessions(
-            recipient_id))
+    def own_devices_without_sessions(self, own_jid):
+        """ List own device_ids which have no axolotl session.
+
+            Parameters
+            ----------
+            own_jid : string
+                Workaround for missing own jid in OmemoState
+
+            Returns
+            -------
+            [int]
+                A list of device_ids
+        """
+        devices_with_sessions = set(self.store.getSubDeviceSessions(own_jid))
         known_devices = set(self.own_devices) - {self.own_device_id}
         missing_devices = known_devices - devices_with_sessions
         log.debug(self.name + ' → Missing device sessions: ' + str(
