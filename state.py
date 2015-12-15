@@ -83,7 +83,7 @@ class OmemoState:
             bundle_dict['signedPreKeySignature'], identityKey)
 
         sessionBuilder.processPreKeyBundle(prekey_bundle)
-        self.get_session_cipher(recipient_id, device_id)
+        return self.get_session_cipher(recipient_id, device_id)
 
     def _generate_axolotl_keys(self):
         log.info("Generating Axolotl keys for " + self.db_name)
