@@ -255,6 +255,46 @@ def unpack_encrypted(encrypted_node):
     return result
 
 
+def unpack_device_list_update(event):
+    """ Unpacks the device list update received in a MessageReceivedEvent.
+
+        Parameters
+        ----------
+        event : MessageReceivedEvent
+                The event received from gajim
+        Returns
+        -------
+        [int]
+            List of device ids or empty list if nothing found
+    """
+    event_node = event.stanza.getTag('event')
+    account = event.conn.name
+    result = []
+
+    if not event_node:
+        log.warn(account + ' → Device list update event node empty!')
+        return result
+
+    items = event_node.getTag('items', {'node': NS_DEVICE_LIST})
+    if not items or len(items.getChildren()) != 1:
+        log.warn(account + ' → Device list update items node empty!')
+        return result
+
+    list_node = items.getChildren()[0].getTag('list')
+    if not items or len(items.getChildren()) == 0:
+        log.warn(account + ' → Device list update list node empty!')
+        return result
+
+    devices_nodes = list_node.getChildren()
+
+    for dn in devices_nodes:
+        _id = dn.getAttr('id')
+        if _id:
+            result.append(int(_id))
+
+    return result
+
+
 def decode_data(node):
     data = node.getData()
     log.debug(data)
