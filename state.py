@@ -44,7 +44,6 @@ log = logging.getLogger('gajim.plugin_system.omemo')
 
 
 class OmemoState:
-    _COUNT_PREKEYS = 100
     session_ciphers = {}
     omemo_enabled = set()
 
@@ -53,16 +52,9 @@ class OmemoState:
 
     def __init__(self, name):
         self.name = name
-        self.db_name = 'omemo_' + name + '.db'
-        db_file = os.path.join(DB_DIR, self.db_name)
-        log.debug('Opening the DB ' + db_file)
+        db_name = 'omemo_' + name + '.db'
+        db_file = os.path.join(DB_DIR, db_name)
         self.store = LiteAxolotlStore(db_file)
-
-        if self.axolotl_intialiased():
-            self._generate_axolotl_keys()
-
-    def axolotl_intialiased(self):
-        return self.store.getLocalRegistrationId() is None
 
     def build_session(self, recipient_id, device_id, bundle_dict):
         sessionBuilder = SessionBuilder(self.store, self.store, self.store,
@@ -84,21 +76,6 @@ class OmemoState:
 
         sessionBuilder.processPreKeyBundle(prekey_bundle)
         return self.get_session_cipher(recipient_id, device_id)
-
-    def _generate_axolotl_keys(self):
-        log.info("Generating Axolotl keys for " + self.db_name)
-        identityKeyPair = KeyHelper.generateIdentityKeyPair()
-        registrationId = KeyHelper.generateRegistrationId()
-        preKeys = KeyHelper.generatePreKeys(KeyHelper.getRandomSequence(),
-                                            self._COUNT_PREKEYS)
-        self.store.storeLocalData(registrationId, identityKeyPair)
-
-        self._save_pre_keys(preKeys)
-
-    def _save_pre_keys(self, preKeys):
-        log.debug("Storing prekeys")
-        for preKey in preKeys:
-            self.store.storePreKey(preKey.getId(), preKey)
 
     def add_devices(self, name, devices):
         log.debug('Saving devices for ' + name + ' → ' + str(devices))

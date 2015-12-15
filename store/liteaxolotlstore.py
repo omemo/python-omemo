@@ -1,21 +1,42 @@
+import logging
 import sqlite3
 
 from axolotl.state.axolotlstore import AxolotlStore
+from axolotl.util.keyhelper import KeyHelper
 
 from .liteidentitykeystore import LiteIdentityKeyStore
 from .liteprekeystore import LitePreKeyStore
 from .litesessionstore import LiteSessionStore
 from .litesignedprekeystore import LiteSignedPreKeyStore
 
+log = logging.getLogger('gajim.plugin_system.omemo')
+
+DEFAULT_PREKEY_AMOUNT = 100
+
 
 class LiteAxolotlStore(AxolotlStore):
     def __init__(self, db):
+        log.debug('Opening the DB ' + str(db))
         conn = sqlite3.connect(db, check_same_thread=False)
         conn.text_factory = bytes
         self.identityKeyStore = LiteIdentityKeyStore(conn)
         self.preKeyStore = LitePreKeyStore(conn)
         self.signedPreKeyStore = LiteSignedPreKeyStore(conn)
         self.sessionStore = LiteSessionStore(conn)
+
+        if not self.getLocalRegistrationId():
+            log.info("Generating Axolotl keys for db" + str(db))
+            self._generate_axolotl_keys()
+
+    def _generate_axolotl_keys(self):
+        identityKeyPair = KeyHelper.generateIdentityKeyPair()
+        registrationId = KeyHelper.generateRegistrationId()
+        preKeys = KeyHelper.generatePreKeys(KeyHelper.getRandomSequence(),
+                                            DEFAULT_PREKEY_AMOUNT)
+        self.storeLocalData(registrationId, identityKeyPair)
+
+        for preKey in preKeys:
+            self.storePreKey(preKey.getId(), preKey)
 
     def getIdentityKeyPair(self):
         return self.identityKeyStore.getIdentityKeyPair()
