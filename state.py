@@ -167,10 +167,12 @@ class OmemoState:
             return
 
         my_other_devices = set(self.own_devices) - set({self.own_device_id})
+        # Encrypt the message key with for each of our own devices
         for dev in my_other_devices:
             cipher = self.get_session_cipher(from_jid, dev)
             encrypted_keys[dev] = cipher.encrypt(key).serialize()
 
+        # Encrypt the message key with for each of receivers devices
         for rid, cipher in session_ciphers.items():
             try:
                 encrypted_keys[rid] = cipher.encrypt(key).serialize()
