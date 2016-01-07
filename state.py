@@ -95,18 +95,6 @@ class OmemoState:
     def own_device_id_published(self):
         return self.own_device_id in self.own_devices
 
-    def device_ids_for(self, contact):
-        account = contact.account.name
-        log.debug(account + ' ⇒ Searching device_ids for contact ' +
-                  contact.jid)
-        if contact.jid not in self.device_ids:
-            log.debug(contact.jid + '¬∈ devices_ids[' + account + ']')
-            return None
-
-        log.debug(account + ' ⇒ found device_ids ' + str(self.device_ids[
-            contact.jid]))
-        return self.device_ids[contact.jid]
-
     @property
     def bundle(self):
         prekeys = [
