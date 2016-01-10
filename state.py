@@ -184,8 +184,6 @@ class OmemoState:
             raise NoValidSessions(log_msg)
 
         payload = aes_encrypt(key, iv, plaintext)
-        log.info('Payload')
-        log.info(payload)
 
         result = {'sid': self.own_device_id,
                   'keys': encrypted_keys,
