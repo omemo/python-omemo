@@ -219,8 +219,9 @@ class OmemoState:
         missing_devices = [dev
                            for dev in known_devices
                            if not self.store.containsSession(jid, dev)]
-        log.debug(self.name + ' → Missing device sessions: ' + str(
-            missing_devices))
+        if missing_devices:
+            log.debug(self.name + ' → Missing device sessions: ' + str(
+                      missing_devices))
         return missing_devices
 
     def own_devices_without_sessions(self, own_jid):
@@ -240,8 +241,9 @@ class OmemoState:
         missing_devices = [dev
                            for dev in known_devices
                            if not self.store.containsSession(own_jid, dev)]
-        log.debug(self.name + ' → Missing device sessions: ' + str(
-            missing_devices))
+        if missing_devices:
+            log.debug(self.name + ' → Missing device sessions: ' + str(
+                missing_devices))
         return missing_devices
 
     def get_session_cipher(self, jid, device_id):
