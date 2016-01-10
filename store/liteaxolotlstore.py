@@ -27,6 +27,7 @@ from .liteidentitykeystore import LiteIdentityKeyStore
 from .liteprekeystore import LitePreKeyStore
 from .litesessionstore import LiteSessionStore
 from .litesignedprekeystore import LiteSignedPreKeyStore
+from .encryption import EncryptionState
 
 log = logging.getLogger('gajim.plugin_system.omemo')
 
@@ -42,6 +43,7 @@ class LiteAxolotlStore(AxolotlStore):
         self.preKeyStore = LitePreKeyStore(conn)
         self.signedPreKeyStore = LiteSignedPreKeyStore(conn)
         self.sessionStore = LiteSessionStore(conn)
+        self.encryptionStore = EncryptionState(conn)
 
         if not self.getLocalRegistrationId():
             log.info("Generating Axolotl keys for db" + str(db))

@@ -45,7 +45,7 @@ log = logging.getLogger('gajim.plugin_system.omemo')
 
 class OmemoState:
     session_ciphers = {}
-    omemo_enabled = set()
+    encryption = None
 
     device_ids = {}
     own_devices = []
@@ -55,6 +55,7 @@ class OmemoState:
         db_name = 'omemo_' + name + '.db'
         db_file = os.path.join(DB_DIR, db_name)
         self.store = LiteAxolotlStore(db_file)
+        self.encryption = self.store.encryptionStore
 
     def build_session(self, recipient_id, device_id, bundle_dict):
         sessionBuilder = SessionBuilder(self.store, self.store, self.store,
