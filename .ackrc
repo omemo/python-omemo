@@ -1,0 +1,19 @@
+--ignore-dir 
+    .tox
+
+--ignore-dir 
+    dist
+
+--ignore-dir 
+    .venv
+
+--ignore-dir 
+    .ropeproject
+
+--ignore-dir 
+    src/omemo.egg-info/
+
+--ignore-file
+ext:pyc
+--ignore-file
+match:.coverage.python
