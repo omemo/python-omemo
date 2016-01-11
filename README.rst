@@ -59,7 +59,7 @@ Overview
 
 .. end-badges
 
-This is an implementation o*OMEMO Multi-End Message and Object Encryption** in Python.
+This is an implementation **OMEMO Multi-End Message and Object Encryption** in Python.
 
 
 Installation
