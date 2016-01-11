@@ -1,5 +1,5 @@
 import unittest
-from store.encryption import EncryptionState
+from omemo.encryption import EncryptionState
 import os
 import sqlite3
 

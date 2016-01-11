@@ -37,7 +37,7 @@ from Crypto.Random import get_random_bytes
 from common import gajim
 
 from .aes_gcm import NoValidSessions, aes_decrypt, aes_encrypt
-from .store.liteaxolotlstore import LiteAxolotlStore
+from .liteaxolotlstore import LiteAxolotlStore
 
 DB_DIR = gajim.gajimpaths.data_root
 log = logging.getLogger('gajim.plugin_system.omemo')
