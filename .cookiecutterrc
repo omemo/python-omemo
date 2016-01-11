@@ -43,5 +43,5 @@ default_context:
     test_runner:               'pytest'
     travis:                    'yes'
     version:                   '0.1.0'
-    website:                   'https://github.com/kalkin'
+    website:                   'https://github.com/omemo'
     year:                      'now'

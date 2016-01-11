@@ -20,21 +20,21 @@ Overview
     :target: https://readthedocs.org/projects/python-omemo
     :alt: Documentation Status
 
-.. |travis| image:: https://travis-ci.org/kalkin/python-omemo.svg?branch=master
+.. |travis| image:: https://travis-ci.org/omemo/python-omemo.svg?branch=master
     :alt: Travis-CI Build Status
-    :target: https://travis-ci.org/kalkin/python-omemo
+    :target: https://travis-ci.org/omemo/python-omemo
 
-.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/kalkin/python-omemo?branch=master&svg=true
+.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/omemo/python-omemo?branch=master&svg=true
     :alt: AppVeyor Build Status
-    :target: https://ci.appveyor.com/project/kalkin/python-omemo
+    :target: https://ci.appveyor.com/project/omemo/python-omemo
 
-.. |requires| image:: https://requires.io/github/kalkin/python-omemo/requirements.svg?branch=master
+.. |requires| image:: https://requires.io/github/omemo/python-omemo/requirements.svg?branch=master
     :alt: Requirements Status
-    :target: https://requires.io/github/kalkin/python-omemo/requirements/?branch=master
+    :target: https://requires.io/github/omemo/python-omemo/requirements/?branch=master
 
-.. |codecov| image:: https://codecov.io/github/kalkin/python-omemo/coverage.svg?branch=master
+.. |codecov| image:: https://codecov.io/github/omemo/python-omemo/coverage.svg?branch=master
     :alt: Coverage Status
-    :target: https://codecov.io/github/kalkin/python-omemo
+    :target: https://codecov.io/github/omemo/python-omemo
 
 .. |version| image:: https://img.shields.io/pypi/v/python-omemo.svg?style=flat
     :alt: PyPI Package latest release
