@@ -59,7 +59,7 @@ Overview
 
 .. end-badges
 
-This is an implementation o*OMEMO Multi-End Message and Object Encryption** in Python.
+This is an implementation **OMEMO Multi-End Message and Object Encryption** in Python.
 
 
 Installation
@@ -77,6 +77,47 @@ https://python-omemo.readthedocs.org/
 Development
 ===========
 
-To run the all tests run::
+To set up `python-omemo` for local development:
+
+1. `Fork python-omemo on GitHub <https://github.com/omemo/python-omemo/fork>`_.
+2. Clone your fork locally::
+
+    git clone git@github.com:your_name_here/python-omemo.git
+
+3. Create a branch for local development::
+
+    git checkout -b name-of-your-bugfix-or-feature
+
+   Now you can make your changes locally.
+
+4. Run all the checks, doc builder and spell checker with `tox <http://tox.readthedocs.org/en/latest/install.html>`_ one command::
 
     tox
+
+Tips
+----
+
+To run a subset of tests::
+
+    tox -e envname -- py.test -k test_myfeature
+
+To run all the test environments in *parallel* (you need to ``pip install detox``)::
+
+    detox
+
+
+Contributing
+============
+
+The **Python OMEMO** project direction is the sum of documented problems:
+everybody is invited to describe and discuss a problem in the `issue
+tracker <https://github.com/omemo/python-omemo/issues>`_. Contributed solutions
+
+encourage participation.
+
+Some problem fields we initially focus on are:
+
+- Creation of a reusable python omemo implementation
+- Reusability bu the `Gajim OMEMO plugin https://github.com/omemo/gajim-omemo`_
+
+       
