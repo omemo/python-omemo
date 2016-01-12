@@ -50,8 +50,7 @@ class LitePreKeyStore(PreKeyStore):
         cursor.execute(q)
         result = cursor.fetchall()
 
-        return [PreKeyRecord(serialized=result[0]) for result in result]
-        # return [PreKeyRecord(serialized=result[0]) for r in result]
+        return [PreKeyRecord(serialized=r[0]) for r in result]
 
     def storePreKey(self, preKeyId, preKeyRecord):
         # self.removePreKey(preKeyId)
