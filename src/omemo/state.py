@@ -24,8 +24,8 @@ from base64 import b64encode
 from axolotl.ecc.djbec import DjbECPublicKey
 from axolotl.identitykey import IdentityKey
 from axolotl.invalidmessageexception import InvalidMessageException
-from axolotl.invalidversionexception import (InvalidVersionException,
-                                             NoSessionException)
+from axolotl.invalidversionexception import InvalidVersionException
+from axolotl.nosessionexception import NoSessionException
 from axolotl.protocol.prekeywhispermessage import PreKeyWhisperMessage
 from axolotl.protocol.whispermessage import WhisperMessage
 from axolotl.sessionbuilder import SessionBuilder
