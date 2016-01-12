@@ -34,13 +34,11 @@ from axolotl.state.prekeybundle import PreKeyBundle
 from axolotl.util.keyhelper import KeyHelper
 from Crypto.Random import get_random_bytes
 
-from common import gajim
-
 from .aes_gcm import NoValidSessions, aes_decrypt, aes_encrypt
 from .liteaxolotlstore import LiteAxolotlStore
 
-DB_DIR = gajim.gajimpaths.data_root
-log = logging.getLogger('gajim.plugin_system.omemo')
+DB_DIR = '.'
+log = logging.getLogger('omemo')
 
 
 class OmemoState:
