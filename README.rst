@@ -118,6 +118,6 @@ encourage participation.
 Some problem fields we initially focus on are:
 
 - Creation of a reusable python omemo implementation
-- Reusability bu the `Gajim OMEMO plugin https://github.com/omemo/gajim-omemo`_
+- Reusability bu the `Gajim OMEMO plugin <https://github.com/omemo/gajim-omemo>`_
 
        
