@@ -18,7 +18,6 @@
 #
 
 import logging
-import sqlite3
 
 from axolotl.state.axolotlstore import AxolotlStore
 from axolotl.util.keyhelper import KeyHelper
@@ -35,18 +34,20 @@ DEFAULT_PREKEY_AMOUNT = 100
 
 
 class LiteAxolotlStore(AxolotlStore):
-    def __init__(self, db):
-        log.debug('Opening the DB ' + str(db))
-        conn = sqlite3.connect(db, check_same_thread=False)
-        conn.text_factory = bytes
-        self.identityKeyStore = LiteIdentityKeyStore(conn)
-        self.preKeyStore = LitePreKeyStore(conn)
-        self.signedPreKeyStore = LiteSignedPreKeyStore(conn)
-        self.sessionStore = LiteSessionStore(conn)
-        self.encryptionStore = EncryptionState(conn)
+    def __init__(self, connection):
+        try:
+            connection.text_factory = bytes
+        except(AttributeError):
+            raise AssertionError('Expected a sqlite3.Connection got ' +
+                                 str(connection))
+        self.identityKeyStore = LiteIdentityKeyStore(connection)
+        self.preKeyStore = LitePreKeyStore(connection)
+        self.signedPreKeyStore = LiteSignedPreKeyStore(connection)
+        self.sessionStore = LiteSessionStore(connection)
+        self.encryptionStore = EncryptionState(connection)
 
         if not self.getLocalRegistrationId():
-            log.info("Generating Axolotl keys for db" + str(db))
+            log.info("Generating Axolotl keys")
             self._generate_axolotl_keys()
 
     def _generate_axolotl_keys(self):
@@ -94,6 +95,7 @@ class LiteAxolotlStore(AxolotlStore):
         return self.sessionStore.loadSession(recepientId, deviceId)
 
     def getSubDeviceSessions(self, recepientId):
+        # TODO Reuse this
         return self.sessionStore.getSubDeviceSessions(recepientId)
 
     def storeSession(self, recepientId, deviceId, sessionRecord):

@@ -18,7 +18,6 @@
 #
 
 import logging
-import os
 from base64 import b64encode
 
 from axolotl.ecc.djbec import DjbECPublicKey
@@ -37,7 +36,6 @@ from Crypto.Random import get_random_bytes
 from .aes_gcm import NoValidSessions, aes_decrypt, aes_encrypt
 from .liteaxolotlstore import LiteAxolotlStore
 
-DB_DIR = '.'
 log = logging.getLogger('omemo')
 
 
@@ -48,11 +46,12 @@ class OmemoState:
     device_ids = {}
     own_devices = []
 
-    def __init__(self, name):
-        self.name = name
-        db_name = 'omemo_' + name + '.db'
-        db_file = os.path.join(DB_DIR, db_name)
-        self.store = LiteAxolotlStore(db_file)
+    def __init__(self, connection):
+        """ Instantiates an OmemoState object.
+
+            :param connection: an :py:class:sqlite3.Connection
+        """
+        self.store = LiteAxolotlStore(connection)
         self.encryption = self.store.encryptionStore
 
     def build_session(self, recipient_id, device_id, bundle_dict):
@@ -155,7 +154,7 @@ class OmemoState:
 
         devices_list = self.device_list_for(jid)
         if len(devices_list) == 0:
-            log.error(self.name + ' → No known devices')
+            log.error('No known devices')
             return
 
         for dev in devices_list:
@@ -176,7 +175,7 @@ class OmemoState:
             try:
                 encrypted_keys[rid] = cipher.encrypt(key).serialize()
             except:
-                log.warn(self.name + ' → Failed to find key for device ' + str(
+                log.warn('Failed to find key for device ' + str(
                     rid))
 
         if len(encrypted_keys) == 0:
@@ -219,7 +218,7 @@ class OmemoState:
                            for dev in known_devices
                            if not self.store.containsSession(jid, dev)]
         if missing_devices:
-            log.debug(self.name + ' → Missing device sessions: ' + str(
+            log.debug('Missing device sessions: ' + str(
                       missing_devices))
         return missing_devices
 
@@ -241,7 +240,7 @@ class OmemoState:
                            for dev in known_devices
                            if not self.store.containsSession(own_jid, dev)]
         if missing_devices:
-            log.debug(self.name + ' → Missing device sessions: ' + str(
+            log.debug('Missing device sessions: ' + str(
                 missing_devices))
         return missing_devices
 
