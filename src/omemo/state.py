@@ -49,7 +49,7 @@ class OmemoState:
     def __init__(self, connection):
         """ Instantiates an OmemoState object.
 
-            :param connection: an :py:class:sqlite3.Connection
+            :param connection: an :py:class:`sqlite3.Connection`
         """
         self.store = LiteAxolotlStore(connection)
         self.encryption = self.store.encryptionStore

@@ -1,5 +1,8 @@
-omemo
-=====
+OmemoState
+==========
 
-.. automodule:: omemo
+.. autoclass:: omemo.state.OmemoState
     :members:
+    :undoc-members:
+    :show-inheritance:
+    :special-members:
