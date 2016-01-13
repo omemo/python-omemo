@@ -1,6 +1,11 @@
-import pytest
+import random
 import sqlite3
+import sys
+
+import pytest
+
 from omemo.state import OmemoState
+
 
 @pytest.fixture
 def db():
@@ -25,3 +30,30 @@ def test_omemo_state_creation_fails():
         assert OmemoState("fooo")
     with pytest.raises(AssertionError):
         assert OmemoState(None)
+
+
+def test_own_devices(omemo_state):
+    """ Checks the adding/removing device_ids to own_devices .
+    """
+    assert len(omemo_state.own_devices) == 0
+    assert isinstance(omemo_state.own_device_id, int)
+    devices_update = [random.randint(0, sys.maxsize) for x in range(0,3)]
+    omemo_state.add_own_devices(devices_update) 
+    assert len(omemo_state.own_devices) == 3
+    assert omemo_state.own_devices == devices_update
+
+@pytest.mark.skipif(True, reason="NOT IMPLEMENTED")
+def test_own_device_tupple(omemo_state):
+    """ :py:attribute:`own_devices` should be a tupple.
+    """
+    assert isinstance(omemo_state.own_devices, tuple)
+
+
+@pytest.mark.skipif(True, reason="NOT IMPLEMENTED")
+def test_own_devices_accepts_list(omemo_state):
+    """ 
+        :py:attribute:`own_devices` should accept a list as argument, but should
+         not save duplicates
+    """
+    omemo_state.add_own_devices([1, 2, 2, 1]) 
+    assert len(omemo_state.own_devices) == 2
