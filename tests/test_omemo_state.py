@@ -57,3 +57,15 @@ def test_own_devices_accepts_list(omemo_state):
     """
     omemo_state.add_own_devices([1, 2, 2, 1]) 
     assert len(omemo_state.own_devices) == 2
+
+
+def test_own_device_id_published(omemo_state):
+    """ :py:method:`OmemoState.own_device_id_published()` should return True
+        only if own device id was added via
+        :py:method:`OmemoState.add_own_devices()`.
+    """
+    assert omemo_state.own_device_id_published() == False
+    omemo_state.add_own_devices([2,3,4,5]) 
+    assert omemo_state.own_device_id_published() == False
+    omemo_state.add_own_devices([omemo_state.own_device_id]) 
+    assert omemo_state.own_device_id_published() == True

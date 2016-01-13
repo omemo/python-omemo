@@ -91,6 +91,9 @@ class OmemoState:
         return ((reg_id % 2147483646) + 1)
 
     def own_device_id_published(self):
+        """ Return `True` only if own device id was added via
+            :py:method:`OmemoState.add_own_devices()`.
+        """
         return self.own_device_id in self.own_devices
 
     @property
