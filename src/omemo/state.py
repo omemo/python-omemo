@@ -90,6 +90,14 @@ class OmemoState:
         self.device_ids[name] = devices
 
     def add_own_devices(self, devices):
+        """ Overwrite the current :py:attribute:`OmemoState.own_devices` with
+            the given devices.
+
+            Parameters
+            ----------
+            devices : [int]
+                A list of device_ids
+        """
         self.own_devices = devices
 
     @property

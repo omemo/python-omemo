@@ -91,3 +91,17 @@ def test_device_list_duplicate_handling(omemo_state):
     name = "romeo@example.com"
     omemo_state.add_devices(name, [1,2,2,1])
     assert len(omemo_state.device_list_for(name)) == 2
+
+
+def test_own_devices_without_sessions(omemo_state):
+    own_jid = "romeo@example.com"
+    assert len(omemo_state.own_devices_without_sessions(own_jid)) == 0
+    omemo_state.add_own_devices([1,2,3,4])
+    assert len(omemo_state.own_devices_without_sessions(own_jid)) == 4
+    
+
+def test_own_devices_without_sessions(omemo_state):
+    julia = "julia@example.com"
+    assert len(omemo_state.devices_without_sessions(julia)) == 0
+    omemo_state.add_devices(julia, [1,2,3,4])
+    assert len(omemo_state.devices_without_sessions(julia)) == 4
