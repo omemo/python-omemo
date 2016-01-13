@@ -76,10 +76,28 @@ class OmemoState:
         return self.get_session_cipher(recipient_id, device_id)
 
     def add_devices(self, name, devices):
+        """ Return a an.
+
+            Parameters
+            ----------
+            jid : string
+                The contacts jid
+
+            devices: [int]
+                A list of devices
+        """
         log.debug('Saving devices for ' + name + ' → ' + str(devices))
         self.device_ids[name] = devices
 
     def add_own_devices(self, devices):
+        """ Overwrite the current :py:attribute:`OmemoState.own_devices` with
+            the given devices.
+
+            Parameters
+            ----------
+            devices : [int]
+                A list of device_ids
+        """
         self.own_devices = devices
 
     @property
@@ -91,6 +109,9 @@ class OmemoState:
         return ((reg_id % 2147483646) + 1)
 
     def own_device_id_published(self):
+        """ Return `True` only if own device id was added via
+            :py:method:`OmemoState.add_own_devices()`.
+        """
         return self.own_device_id in self.own_devices
 
     @property
@@ -196,6 +217,13 @@ class OmemoState:
         return result
 
     def device_list_for(self, jid):
+        """ Return a list of known device ids for the specified jid.
+
+            Parameters
+            ----------
+            jid : string
+                The contacts jid
+        """
         if jid not in self.device_ids:
             return set()
         return set(self.device_ids[jid])
