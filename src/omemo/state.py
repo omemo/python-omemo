@@ -164,7 +164,7 @@ class OmemoState:
                     sid))
                 return
 
-        result = aes_decrypt(key, iv, payload)
+        result = unicode(aes_decrypt(key, iv, payload))
         log.debug("Decrypted msg ⇒ " + result)
         return result
 
