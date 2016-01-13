@@ -8,6 +8,7 @@ Contents
    readme
    installation
    usage
+   xep-omemo
    reference/index
    contributing
    authors
