@@ -76,6 +76,16 @@ class OmemoState:
         return self.get_session_cipher(recipient_id, device_id)
 
     def add_devices(self, name, devices):
+        """ Return a an.
+
+            Parameters
+            ----------
+            jid : string
+                The contacts jid
+
+            devices: [int]
+                A list of devices
+        """
         log.debug('Saving devices for ' + name + ' → ' + str(devices))
         self.device_ids[name] = devices
 
@@ -199,6 +209,13 @@ class OmemoState:
         return result
 
     def device_list_for(self, jid):
+        """ Return a list of known device ids for the specified jid.
+
+            Parameters
+            ----------
+            jid : string
+                The contacts jid
+        """
         if jid not in self.device_ids:
             return set()
         return set(self.device_ids[jid])

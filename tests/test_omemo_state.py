@@ -69,3 +69,25 @@ def test_own_device_id_published(omemo_state):
     assert omemo_state.own_device_id_published() == False
     omemo_state.add_own_devices([omemo_state.own_device_id]) 
     assert omemo_state.own_device_id_published() == True
+
+def test_add_device(omemo_state):
+    romeo = "romeo@example.com"
+    assert len(omemo_state.device_list_for(romeo)) == 0
+    omemo_state.add_devices(romeo, (1,2,3,4))
+    assert len(omemo_state.device_list_for(romeo)) == 4
+
+    julia = "julia@example.com"
+    assert len(omemo_state.device_list_for(julia)) == 0
+
+
+@pytest.mark.skipif(True, reason="NOT IMPLEMENTED")
+def test_device_list_tupple(omemo_state):
+    name = "romeo@example.com"
+    omemo_state.add_devices(name, (1,2,3,4))
+    assert isinstance(omemo_state.device_list_for(name), tuple) 
+
+def test_device_list_duplicate_handling(omemo_state):
+    """ Should not save duplicate device ids for the same user """
+    name = "romeo@example.com"
+    omemo_state.add_devices(name, [1,2,2,1])
+    assert len(omemo_state.device_list_for(name)) == 2
