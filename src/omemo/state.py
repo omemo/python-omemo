@@ -18,7 +18,8 @@
 #
 
 import logging
-from base64 import b64encode
+import random
+from base64 import b64encode, b64decode
 
 from axolotl.ecc.djbec import DjbECPublicKey
 from axolotl.identitykey import IdentityKey
@@ -59,18 +60,19 @@ class OmemoState:
                                         self.store, recipient_id, device_id)
 
         registration_id = self.store.getLocalRegistrationId()
+        preKey = random.SystemRandom().choice(bundle_dict['prekeys'])
+        bundle_dict['preKeyId'] = preKey[0]
+        bundle_dict['preKeyPublic'] = b64decode(preKey[1])
 
         preKeyPublic = DjbECPublicKey(bundle_dict['preKeyPublic'][1:])
 
-        signedPreKeyPublic = DjbECPublicKey(bundle_dict['signedPreKeyPublic'][
-            1:])
-        identityKey = IdentityKey(DjbECPublicKey(bundle_dict['identityKey'][
-            1:]))
+        signedPreKeyPublic = DjbECPublicKey(b64decode(bundle_dict['signedPreKeyPublic'])[1:])
+        identityKey = IdentityKey(DjbECPublicKey(b64decode(bundle_dict['identityKey'])[1:]))
 
         prekey_bundle = PreKeyBundle(
             registration_id, device_id, bundle_dict['preKeyId'], preKeyPublic,
             bundle_dict['signedPreKeyId'], signedPreKeyPublic,
-            bundle_dict['signedPreKeySignature'], identityKey)
+            b64decode(bundle_dict['signedPreKeySignature']), identityKey)
 
         sessionBuilder.processPreKeyBundle(prekey_bundle)
         return self.get_session_cipher(recipient_id, device_id)

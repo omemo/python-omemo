@@ -3,6 +3,7 @@ import sqlite3
 import sys
 
 import pytest
+from axolotl.sessioncipher import SessionCipher
 
 from omemo.state import OmemoState
 
@@ -92,7 +93,6 @@ def test_device_list_duplicate_handling(omemo_state):
     omemo_state.add_devices(name, [1,2,2,1])
     assert len(omemo_state.device_list_for(name)) == 2
 
-
 def test_own_devices_without_sessions(omemo_state):
     own_jid = "romeo@example.com"
     assert len(omemo_state.own_devices_without_sessions(own_jid)) == 0
@@ -120,3 +120,17 @@ def test_bundle(omemo_state):
     assert isinstance(bundle['signedPreKeySignature'], bytes)
 
 
+def test_build_session():
+    romeo = omemo_state(db())
+    julia = omemo_state(db())
+
+    assert romeo
+    assert julia
+
+    romeo_device = romeo.own_device_id
+
+    bundle = romeo.bundle
+    assert isinstance(bundle, dict)
+    julias_session = julia.build_session("romeo@example.com", romeo_device,
+            bundle)
+    assert isinstance(julias_session, SessionCipher)
