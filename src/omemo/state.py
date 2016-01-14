@@ -204,15 +204,14 @@ class OmemoState:
         # Encrypt the message key with for each of our own devices
         for dev in my_other_devices:
             cipher = self.get_session_cipher(from_jid, dev)
-            encrypted_keys[dev] = cipher.encrypt(key).serialize()
+            encrypted_keys[dev] = b64encode(cipher.encrypt(key).serialize())
 
         # Encrypt the message key with for each of receivers devices
         for rid, cipher in session_ciphers.items():
             try:
-                encrypted_keys[rid] = cipher.encrypt(key).serialize()
+                encrypted_keys[rid] = b64encode(cipher.encrypt(key).serialize())
             except:
-                log.warn('Failed to find key for device ' + str(
-                    rid))
+                log.warn('Failed to find key for device ' + str(rid))
 
         if len(encrypted_keys) == 0:
             log_msg = 'Encrypted keys empty'
@@ -224,8 +223,8 @@ class OmemoState:
         result = {'sid': self.own_device_id,
                   'keys': encrypted_keys,
                   'jid': jid,
-                  'iv': iv,
-                  'payload': payload}
+                  'iv': b64encode(iv),
+                  'payload': b64encode(payload)}
 
         log.debug('encrypted message')
         log.debug(result)

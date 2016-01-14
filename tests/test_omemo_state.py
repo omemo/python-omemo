@@ -1,6 +1,7 @@
 import random
 import sqlite3
 import sys
+from base64 import decodestring
 
 import pytest
 from axolotl.sessioncipher import SessionCipher
@@ -134,3 +135,23 @@ def test_build_session():
     julias_session = julia.build_session("romeo@example.com", romeo_device,
             bundle)
     assert isinstance(julias_session, SessionCipher)
+
+def test_create_message():
+    romeo = omemo_state(db())
+    julia = omemo_state(db())
+    r_jid ="romeo@example.com"
+    j_jid = "julia@example.com"
+
+    romeo_device = romeo.own_device_id
+
+    bundle = romeo.bundle
+    julia.build_session(r_jid, romeo_device, bundle)
+    msg_dict = julia.create_msg(j_jid, r_jid, "Oh Romeo!")
+    assert isinstance(msg_dict, dict)
+    assert msg_dict['jid'] == r_jid
+    assert decodestring(msg_dict['iv'])
+    assert decodestring(msg_dict['payload'])
+    for rid, key in msg_dict['keys'].items():
+        assert isinstance(rid, int)
+        assert decodestring(key)
+
