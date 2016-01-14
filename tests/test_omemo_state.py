@@ -155,3 +155,18 @@ def test_create_message():
         assert isinstance(rid, int)
         assert decodestring(key)
 
+
+def test_decrypt_message():
+    romeo = omemo_state(db())
+    julia = omemo_state(db())
+    r_jid ="romeo@example.com"
+    j_jid = "julia@example.com"
+
+    romeo_device = romeo.own_device_id
+
+    bundle = romeo.bundle
+    julia.build_session(r_jid, romeo_device, bundle)
+    msg_dict = julia.create_msg(j_jid, r_jid, "Oh Romeo!")
+    msg_dict['sender_jid'] = j_jid
+    assert romeo.decrypt_msg(msg_dict) == "Oh Romeo!"
+

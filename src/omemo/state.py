@@ -160,12 +160,12 @@ class OmemoState:
             log.warn('OMEMO message does not contain our device key')
             return
 
-        iv = msg_dict['iv']
+        iv = b64decode(msg_dict['iv'])
         sid = msg_dict['sid']
         sender_jid = msg_dict['sender_jid']
-        payload = msg_dict['payload']
+        payload = b64decode(msg_dict['payload'])
 
-        encrypted_key = msg_dict['keys'][own_id]
+        encrypted_key = b64decode(msg_dict['keys'][own_id])
 
         try:
             key = self.handlePreKeyWhisperMessage(sender_jid, sid,
@@ -180,7 +180,7 @@ class OmemoState:
                 return
 
         result = unicode(aes_decrypt(key, iv, payload))
-        log.debug("Decrypted msg ⇒ " + result)
+        log.debug(u"Decrypted msg ⇒ " + result)
         return result
 
     def create_msg(self, from_jid, jid, plaintext):
