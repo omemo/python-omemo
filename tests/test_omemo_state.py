@@ -105,3 +105,18 @@ def test_own_devices_without_sessions(omemo_state):
     assert len(omemo_state.devices_without_sessions(julia)) == 0
     omemo_state.add_devices(julia, [1,2,3,4])
     assert len(omemo_state.devices_without_sessions(julia)) == 4
+
+def test_bundle(omemo_state):
+    bundle = omemo_state.bundle
+    assert isinstance(bundle, dict)
+    assert isinstance(bundle['identityKey'], bytes)
+    assert isinstance(bundle['prekeys'], list)
+    for f in bundle['prekeys']:
+        preKeyId, preKeyPublic = f
+        assert isinstance(preKeyId, int)
+        assert isinstance(preKeyPublic, bytes)
+    assert isinstance(bundle['signedPreKeyId'], int)
+    assert isinstance(bundle['signedPreKeyPublic'], bytes)
+    assert isinstance(bundle['signedPreKeySignature'], bytes)
+
+

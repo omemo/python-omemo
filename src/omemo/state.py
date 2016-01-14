@@ -116,6 +116,19 @@ class OmemoState:
 
     @property
     def bundle(self):
+        """
+            .. highlight: python
+            Returns all data needed to announce bundle information.
+            ::
+                bundle_dict = {
+                    'signedPreKeyPublic': bytes,
+                    'prekeys': [(int, bytes) (int, bytes)],
+                    'identityKey': bytes,
+                    'signedPreKeyId': int,
+                    'signedPreKeySignature': bytes
+                }
+
+        """
         prekeys = [
             (k.getId(), b64encode(k.getKeyPair().getPublicKey().serialize()))
             for k in self.store.loadPreKeys()
