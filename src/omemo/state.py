@@ -23,6 +23,7 @@ from base64 import b64encode, b64decode
 
 from axolotl.ecc.djbec import DjbECPublicKey
 from axolotl.identitykey import IdentityKey
+from axolotl.duplicatemessagexception import DuplicateMessageException
 from axolotl.invalidmessageexception import InvalidMessageException
 from axolotl.invalidversionexception import InvalidVersionException
 from axolotl.nosessionexception import NoSessionException
@@ -36,8 +37,8 @@ from axolotl.util.keyhelper import KeyHelper
 from .aes_gcm import NoValidSessions, decrypt, encrypt
 from .liteaxolotlstore import LiteAxolotlStore
 
-log = logging.getLogger('omemo')
-
+#log = logging.getLogger('omemo')
+log = logging.getLogger('gajim.plugin_system.omemo')
 
 # Monkey patch axolotl SessionCipher
 def s_decryptMsg(self, ciphertext):
@@ -86,6 +87,7 @@ class OmemoState:
     encryption = None
 
     device_ids = {}
+    own_name = ''
     own_devices = []
 
     def __init__(self, connection):
@@ -132,7 +134,7 @@ class OmemoState:
         log.debug('Saving devices for ' + name + ' → ' + str(devices))
         self.device_ids[name] = devices
 
-    def add_own_devices(self, devices):
+    def add_own_devices(self, name, devices):
         """ Overwrite the current :py:attribute:`OmemoState.own_devices` with
             the given devices.
 
@@ -141,6 +143,7 @@ class OmemoState:
             devices : [int]
                 A list of device_ids
         """
+        self.own_name = name
         self.own_devices = devices
 
     @property
@@ -219,6 +222,22 @@ class OmemoState:
                 log.error('sender_jid →  ' + str(sender_jid) + ' sid =>' + str(
                     sid))
                 return
+            except (DuplicateMessageException) as e:
+                log.error('Duplicate message found ' + str(e.args))
+                log.error('sender_jid → ' + str(sender_jid) + ' sid => ' + str(
+                    sid))
+                return
+            except (Exception) as e:
+                log.error('Duplicate message found ' + str(e.args))
+                log.error('sender_jid → ' + str(sender_jid) + ' sid => ' + str(
+                    sid))
+                return
+
+        except (DuplicateMessageException):
+            log.error('Duplicate message found ' + e.message)
+            log.error('sender_jid → ' + str(sender_jid) + ' sid => ' + str(
+                sid))
+            return
 
         result = decrypt(key, iv, payload)
 
@@ -278,6 +297,8 @@ class OmemoState:
             jid : string
                 The contacts jid
         """
+        if jid == self.own_name:
+            return set(self.own_devices) - set({self.own_device_id})
         if jid not in self.device_ids:
             return set()
         return set(self.device_ids[jid])

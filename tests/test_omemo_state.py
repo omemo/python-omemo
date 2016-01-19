@@ -40,7 +40,7 @@ def test_own_devices(omemo_state):
     assert len(omemo_state.own_devices) == 0
     assert isinstance(omemo_state.own_device_id, int)
     devices_update = [random.randint(0, sys.maxsize) for x in range(0,3)]
-    omemo_state.add_own_devices(devices_update) 
+    omemo_state.add_own_devices('me', devices_update) 
     assert len(omemo_state.own_devices) == 3
     assert omemo_state.own_devices == devices_update
 
@@ -67,9 +67,9 @@ def test_own_device_id_published(omemo_state):
         :py:method:`OmemoState.add_own_devices()`.
     """
     assert omemo_state.own_device_id_published() == False
-    omemo_state.add_own_devices([2,3,4,5]) 
+    omemo_state.add_own_devices('me', [2,3,4,5]) 
     assert omemo_state.own_device_id_published() == False
-    omemo_state.add_own_devices([omemo_state.own_device_id]) 
+    omemo_state.add_own_devices('me', [omemo_state.own_device_id]) 
     assert omemo_state.own_device_id_published() == True
 
 def test_add_device(omemo_state):
