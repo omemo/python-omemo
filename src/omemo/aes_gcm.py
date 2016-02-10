@@ -30,13 +30,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
-import logging
 from struct import pack, unpack
 
 from Crypto.Cipher import AES
 from Crypto.Util import strxor
-
-log = logging.getLogger('gajim.plugin_system.omemo')
 
 
 def gcm_rightshift(vec):
@@ -146,7 +143,6 @@ def aes_encrypt(key, nonce, plaintext):
     """ Use AES128 GCM with the given key and iv to encrypt the payload. """
     c, t = gcm_encrypt(key, nonce, plaintext, '')
     result = c + t
-    log.info(result)
     return result
 
 
