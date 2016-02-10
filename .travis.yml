@@ -22,10 +22,7 @@ env:
     - TOXENV=py35-nocov-crypto
     - TOXENV=py35-nocov-crypto11
     - TOXENV=py35-nocov-crypto12
-    - TOXENV=pypy-cover-crypto,codecov
-    - TOXENV=pypy-nocov-crypto
-    - TOXENV=pypy-nocov-crypto11
-    - TOXENV=pypy-nocov-crypto12
+    - TOXENV=pypy-nocov
 before_install:
   - python --version
   - uname -a
