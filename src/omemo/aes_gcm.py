@@ -29,6 +29,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import os
 import logging
 from struct import pack, unpack
 
@@ -154,6 +155,20 @@ def aes_decrypt(key, nonce, payload):
     ciphertext = payload[:-16]
     mac = payload[-16:]
     return gcm_decrypt(key, nonce, ciphertext, '', mac)
+
+
+def encrypt(plaintext):
+    key = os.urandom(16)
+    iv = os.urandom(16)
+    if type(plaintext) is str:
+        plaintext = plaintext.encode()
+    elif type(plaintext) is unicode:
+        plaintext = plaintext.encode()
+    return key, iv, aes_encrypt(key, iv, plaintext)
+
+
+def decrypt(key, iv, ciphertext):
+    return aes_decrypt(key, iv, ciphertext).decode('utf-8')
 
 
 class NoValidSessions(Exception):
