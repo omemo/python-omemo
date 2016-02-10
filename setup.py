@@ -60,7 +60,7 @@ setup(
     ],
     install_requires=[
         'python-axolotl>=0.1.7',
-        'pycrypto>=2.6.1',
+        'cryptography>=1.1',
         'protobuf>=3.0.0b2'
     ],
     extras_require={},
