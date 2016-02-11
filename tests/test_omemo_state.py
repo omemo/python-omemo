@@ -156,7 +156,6 @@ def test_create_message():
         assert decodestring(key)
 
 
-@pytest.mark.skipif(True, reason="FIX THIS")
 def test_decrypt_message():
     romeo = omemo_state(db())
     julia = omemo_state(db())

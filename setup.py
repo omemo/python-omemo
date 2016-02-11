@@ -15,8 +15,8 @@ from setuptools import find_packages
 from setuptools import setup
 
 requirements = [
-        'python-axolotl>=0.1.7',
-        'protobuf>=3.0.0b2'
+        'python-axolotl==0.1.7-p1',
+        'protobuf==3.0.0.b2'
     ]
 
 if platform.python_implementation() == 'PyPy':
@@ -69,6 +69,7 @@ setup(
     keywords=[
         # eg: 'keyword1', 'keyword2', 'keyword3',
     ],
-    install_requires=requirements,
     extras_require={},
-)
+    dependency_links=["https://github.com/kalkin/python-axolotl/tarball/master#egg=python-axolotl-0.1.7-p1"],
+    install_requires=requirements,
+    )
