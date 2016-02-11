@@ -8,15 +8,20 @@ env:
   matrix:
     - TOXENV=check
 
-    - TOXENV=py27-cover,codecov
-    - TOXENV=py27-nocov
-    - TOXENV=py33-cover,codecov
-    - TOXENV=py33-nocov
-    - TOXENV=py34-cover,codecov
-    - TOXENV=py34-nocov
-    - TOXENV=py35-cover,codecov
-    - TOXENV=py35-nocov
-    - TOXENV=pypy-cover,codecov
+    - TOXENV=py27-cover-crypto,codecov
+    - TOXENV=py27-nocov-crypto
+    - TOXENV=py33-cover-crypto,codecov
+    - TOXENV=py33-nocov-crypto
+    - TOXENV=py33-nocov-crypto11
+    - TOXENV=py33-nocov-crypto12
+    - TOXENV=py34-cover-crypto,codecov
+    - TOXENV=py34-nocov-crypto
+    - TOXENV=py34-nocov-crypto11
+    - TOXENV=py34-nocov-crypto12
+    - TOXENV=py35-cover-crypto,codecov
+    - TOXENV=py35-nocov-crypto
+    - TOXENV=py35-nocov-crypto11
+    - TOXENV=py35-nocov-crypto12
     - TOXENV=pypy-nocov
 before_install:
   - python --version
@@ -41,4 +46,4 @@ cache:
 notifications:
   email:
     on_success: never
-    on_failure: always
+    on_failure: never

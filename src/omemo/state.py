@@ -32,9 +32,8 @@ from axolotl.sessionbuilder import SessionBuilder
 from axolotl.sessioncipher import SessionCipher
 from axolotl.state.prekeybundle import PreKeyBundle
 from axolotl.util.keyhelper import KeyHelper
-from Crypto.Random import get_random_bytes
 
-from .aes_gcm import NoValidSessions, aes_decrypt, aes_encrypt
+from .aes_gcm import NoValidSessions, decrypt, encrypt
 from .liteaxolotlstore import LiteAxolotlStore
 
 log = logging.getLogger('omemo')
@@ -179,13 +178,11 @@ class OmemoState:
                     sid))
                 return
 
-        result = unicode(aes_decrypt(key, iv, payload))
+        result = unicode(decrypt(key, iv, payload))
         log.debug(u"Decrypted msg ⇒ " + result)
         return result
 
     def create_msg(self, from_jid, jid, plaintext):
-        key = get_random_bytes(16)
-        iv = get_random_bytes(16)
         encrypted_keys = {}
 
         devices_list = self.device_list_for(jid)
@@ -199,6 +196,8 @@ class OmemoState:
         if not session_ciphers:
             log.warn('No session ciphers for ' + jid)
             return
+
+        (key, iv, payload) = encrypt(plaintext)
 
         my_other_devices = set(self.own_devices) - set({self.own_device_id})
         # Encrypt the message key with for each of our own devices
@@ -217,8 +216,6 @@ class OmemoState:
             log_msg = 'Encrypted keys empty'
             log.error(log_msg)
             raise NoValidSessions(log_msg)
-
-        payload = aes_encrypt(key, iv, plaintext)
 
         result = {'sid': self.own_device_id,
                   'keys': encrypted_keys,

@@ -4,6 +4,7 @@ from __future__ import absolute_import, print_function
 
 import io
 import re
+import platform
 from glob import glob
 from os.path import basename
 from os.path import dirname
@@ -12,6 +13,16 @@ from os.path import splitext
 
 from setuptools import find_packages
 from setuptools import setup
+
+requirements = [
+        'python-axolotl>=0.1.7',
+        'protobuf>=3.0.0b2'
+    ]
+
+if platform.python_implementation() == 'PyPy':
+    requirements += ['pycrypto']
+else:
+    requirements += ['cryptography>=1.1']
 
 
 def read(*names, **kwargs):
@@ -58,10 +69,6 @@ setup(
     keywords=[
         # eg: 'keyword1', 'keyword2', 'keyword3',
     ],
-    install_requires=[
-        'python-axolotl>=0.1.7',
-        'pycrypto>=2.6.1',
-        'protobuf>=3.0.0b2'
-    ],
+    install_requires=requirements,
     extras_require={},
 )
