@@ -178,7 +178,7 @@ class OmemoState:
                     sid))
                 return
 
-        result = decrypt(key, iv, payload)
+        result = unicode(decrypt(key, iv, payload))
         log.debug(u"Decrypted msg ⇒ " + result)
         return result
 
@@ -297,13 +297,13 @@ class OmemoState:
     def handlePreKeyWhisperMessage(self, recipient_id, device_id, key):
         preKeyWhisperMessage = PreKeyWhisperMessage(serialized=key)
         sessionCipher = self.get_session_cipher(recipient_id, device_id)
-        key = sessionCipher.decryptPkmsg(preKeyWhisperMessage, False)
+        key = sessionCipher.decryptPkmsg(preKeyWhisperMessage)
         log.debug('PreKeyWhisperMessage -> ' + str(key))
         return key
 
     def handleWhisperMessage(self, recipient_id, device_id, key):
         whisperMessage = WhisperMessage(serialized=key)
         sessionCipher = self.get_session_cipher(recipient_id, device_id)
-        key = sessionCipher.decryptMsg(whisperMessage, False)
+        key = sessionCipher.decryptMsg(whisperMessage)
         log.debug('WhisperMessage -> ' + str(key))
         return key
