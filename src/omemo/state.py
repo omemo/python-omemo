@@ -39,6 +39,48 @@ from .liteaxolotlstore import LiteAxolotlStore
 log = logging.getLogger('omemo')
 
 
+# Monkey patch axolotl SessionCipher
+def s_decryptMsg(self, ciphertext):
+    """
+    :type ciphertext: WhisperMessage
+    """
+    if not self.sessionStore.containsSession(self.recipientId, self.deviceId):
+        raise NoSessionException("No session for: %s, %s" %
+                                 (self.recipientId, self.deviceId))
+
+    sessionRecord = self.sessionStore.loadSession(self.recipientId,
+                                                  self.deviceId)
+    plaintext = self.decryptWithSessionRecord(sessionRecord, ciphertext)
+
+    self.sessionStore.storeSession(self.recipientId, self.deviceId,
+                                   sessionRecord)
+
+    return plaintext
+
+
+def s_decryptPkmsg(self, ciphertext):
+    """
+    :type ciphertext: PreKeyWhisperMessage
+    """
+    sessionRecord = self.sessionStore.loadSession(self.recipientId,
+                                                  self.deviceId)
+    unsignedPreKeyId = self.sessionBuilder.process(sessionRecord, ciphertext)
+    plaintext = self.decryptWithSessionRecord(sessionRecord,
+                                              ciphertext.getWhisperMessage())
+
+    self.sessionStore.storeSession(self.recipientId, self.deviceId,
+                                   sessionRecord)
+
+    if unsignedPreKeyId is not None:
+        self.preKeyStore.removePreKey(unsignedPreKeyId)
+
+    return plaintext
+
+
+SessionCipher.decryptMsg = s_decryptMsg
+SessionCipher.decryptPkmsg = s_decryptPkmsg
+
+
 class OmemoState:
     session_ciphers = {}
     encryption = None
@@ -178,7 +220,8 @@ class OmemoState:
                     sid))
                 return
 
-        result = unicode(decrypt(key, iv, payload))
+        result = decrypt(key, iv, payload)
+
         log.debug(u"Decrypted msg ⇒ " + result)
         return result
 
