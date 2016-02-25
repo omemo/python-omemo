@@ -31,11 +31,8 @@ except ImportError:
 def encrypt(plaintext):
     key = os.urandom(16)
     iv = os.urandom(16)
-    if type(plaintext) is str:
-        plaintext = plaintext.encode()
-    elif type(plaintext) is unicode:
-        plaintext = plaintext.encode()
-    return key, iv, aes_encrypt(key, iv, plaintext)
+    encoded_plaintext = plaintext.encode()
+    return key, iv, aes_encrypt(key, iv, encoded_plaintext)
 
 
 def decrypt(key, iv, ciphertext):
