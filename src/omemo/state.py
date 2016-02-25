@@ -39,6 +39,48 @@ from .liteaxolotlstore import LiteAxolotlStore
 log = logging.getLogger('omemo')
 
 
+# Monkey patch axolotl SessionCipher
+def s_decryptMsg(self, ciphertext):
+    """
+    :type ciphertext: WhisperMessage
+    """
+    if not self.sessionStore.containsSession(self.recipientId, self.deviceId):
+        raise NoSessionException("No session for: %s, %s" %
+                                 (self.recipientId, self.deviceId))
+
+    sessionRecord = self.sessionStore.loadSession(self.recipientId,
+                                                  self.deviceId)
+    plaintext = self.decryptWithSessionRecord(sessionRecord, ciphertext)
+
+    self.sessionStore.storeSession(self.recipientId, self.deviceId,
+                                   sessionRecord)
+
+    return plaintext
+
+
+def s_decryptPkmsg(self, ciphertext):
+    """
+    :type ciphertext: PreKeyWhisperMessage
+    """
+    sessionRecord = self.sessionStore.loadSession(self.recipientId,
+                                                  self.deviceId)
+    unsignedPreKeyId = self.sessionBuilder.process(sessionRecord, ciphertext)
+    plaintext = self.decryptWithSessionRecord(sessionRecord,
+                                              ciphertext.getWhisperMessage())
+
+    self.sessionStore.storeSession(self.recipientId, self.deviceId,
+                                   sessionRecord)
+
+    if unsignedPreKeyId is not None:
+        self.preKeyStore.removePreKey(unsignedPreKeyId)
+
+    return plaintext
+
+
+SessionCipher.decryptMsg = s_decryptMsg
+SessionCipher.decryptPkmsg = s_decryptPkmsg
+
+
 class OmemoState:
     session_ciphers = {}
     encryption = None
@@ -179,6 +221,7 @@ class OmemoState:
                 return
 
         result = decrypt(key, iv, payload)
+
         log.debug(u"Decrypted msg ⇒ " + result)
         return result
 
@@ -297,13 +340,13 @@ class OmemoState:
     def handlePreKeyWhisperMessage(self, recipient_id, device_id, key):
         preKeyWhisperMessage = PreKeyWhisperMessage(serialized=key)
         sessionCipher = self.get_session_cipher(recipient_id, device_id)
-        key = sessionCipher.decryptPkmsg(preKeyWhisperMessage, False)
+        key = sessionCipher.decryptPkmsg(preKeyWhisperMessage)
         log.debug('PreKeyWhisperMessage -> ' + str(key))
         return key
 
     def handleWhisperMessage(self, recipient_id, device_id, key):
         whisperMessage = WhisperMessage(serialized=key)
         sessionCipher = self.get_session_cipher(recipient_id, device_id)
-        key = sessionCipher.decryptMsg(whisperMessage, False)
+        key = sessionCipher.decryptMsg(whisperMessage)
         log.debug('WhisperMessage -> ' + str(key))
         return key

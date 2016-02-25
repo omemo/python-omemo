@@ -18,6 +18,7 @@
 #
 
 import os
+import sys
 
 try:
     from omemo.aes_gcm_native import aes_decrypt
@@ -38,7 +39,11 @@ def encrypt(plaintext):
 
 
 def decrypt(key, iv, ciphertext):
-    return aes_decrypt(key, iv, ciphertext).decode('utf-8')
+    plaintext = aes_decrypt(key, iv, ciphertext).decode('utf-8')
+    if sys.version_info < (3, 0):
+        return unicode(plaintext)
+    else:
+        return plaintext
 
 
 class NoValidSessions(Exception):
