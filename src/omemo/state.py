@@ -134,6 +134,12 @@ class OmemoState:
         log.debug('Saving devices for ' + name + ' → ' + str(devices))
         self.device_ids[name] = devices
 
+    def add_device(self, name, device_id):
+       if name not in self.device_ids:
+           self.device_ids[name] =  {device_id}
+       elif device_id not in self.device_ids[name]:
+           self.device_ids[name].append(device_id)
+
     def set_own_devices(self, name, devices):
         """ Overwrite the current :py:attribute:`OmemoState.own_devices` with
             the given devices.
@@ -145,6 +151,10 @@ class OmemoState:
         """
         self.own_name = name
         self.own_devices = devices
+
+    def add_own_device(self, device_id):
+        if device_id not in self.own_devices:
+            self.own_devices.append(device_id)
 
     @property
     def own_device_id(self):
