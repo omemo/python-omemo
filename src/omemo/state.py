@@ -89,7 +89,6 @@ class OmemoState:
             :param connection: an :py:class:`sqlite3.Connection`
         """
         self.session_ciphers = {}
-        self.encryption = None
         self.own_jid = own_jid
         self.device_ids = {}
         self.own_devices = []
@@ -254,6 +253,12 @@ class OmemoState:
         result = decrypt(key, iv, payload)
 
         log.debug(u"Decrypted msg ⇒ " + result)
+
+        if self.own_jid == sender_jid:
+            self.add_own_device(sid)
+        else:
+            self.add_device(sender_jid, sid)
+
         return result
 
     def create_msg(self, from_jid, jid, plaintext):
