@@ -23,6 +23,7 @@ from base64 import b64encode, b64decode
 
 from axolotl.ecc.djbec import DjbECPublicKey
 from axolotl.identitykey import IdentityKey
+from axolotl.duplicatemessagexception import DuplicateMessageException
 from axolotl.invalidmessageexception import InvalidMessageException
 from axolotl.invalidversionexception import InvalidVersionException
 from axolotl.nosessionexception import NoSessionException
@@ -82,19 +83,22 @@ SessionCipher.decryptPkmsg = s_decryptPkmsg
 
 
 class OmemoState:
-    session_ciphers = {}
-    encryption = None
-
-    device_ids = {}
-    own_devices = []
-
-    def __init__(self, connection):
+    def __init__(self, own_jid, connection):
         """ Instantiates an OmemoState object.
 
             :param connection: an :py:class:`sqlite3.Connection`
         """
+        self.session_ciphers = {}
+        self.own_jid = own_jid
+        self.device_ids = {}
+        self.own_devices = []
         self.store = LiteAxolotlStore(connection)
         self.encryption = self.store.encryptionStore
+        for jid, device_id in self.store.getDeviceTuples():
+            if jid != own_jid:
+                self.add_device(jid, device_id)
+
+        log.debug(self.own_jid + ': devices after boot:'+str(self.device_ids))
 
     def build_session(self, recipient_id, device_id, bundle_dict):
         sessionBuilder = SessionBuilder(self.store, self.store, self.store,
@@ -118,7 +122,7 @@ class OmemoState:
         sessionBuilder.processPreKeyBundle(prekey_bundle)
         return self.get_session_cipher(recipient_id, device_id)
 
-    def add_devices(self, name, devices):
+    def set_devices(self, name, devices):
         """ Return a an.
 
             Parameters
@@ -132,7 +136,13 @@ class OmemoState:
         log.debug('Saving devices for ' + name + ' → ' + str(devices))
         self.device_ids[name] = devices
 
-    def add_own_devices(self, devices):
+    def add_device(self, name, device_id):
+        if name not in self.device_ids:
+            self.device_ids[name] = [device_id]
+        elif device_id not in self.device_ids[name]:
+            self.device_ids[name].append(device_id)
+
+    def set_own_devices(self, devices):
         """ Overwrite the current :py:attribute:`OmemoState.own_devices` with
             the given devices.
 
@@ -142,6 +152,10 @@ class OmemoState:
                 A list of device_ids
         """
         self.own_devices = devices
+
+    def add_own_device(self, device_id):
+        if device_id not in self.own_devices:
+            self.own_devices.append(device_id)
 
     @property
     def own_device_id(self):
@@ -153,7 +167,7 @@ class OmemoState:
 
     def own_device_id_published(self):
         """ Return `True` only if own device id was added via
-            :py:method:`OmemoState.add_own_devices()`.
+            :py:method:`OmemoState.set_own_devices()`.
         """
         return self.own_device_id in self.own_devices
 
@@ -219,10 +233,32 @@ class OmemoState:
                 log.error('sender_jid →  ' + str(sender_jid) + ' sid =>' + str(
                     sid))
                 return
+            except (DuplicateMessageException) as e:
+                log.error('Duplicate message found ' + str(e.args))
+                log.error('sender_jid → ' + str(sender_jid) + ' sid => ' + str(
+                    sid))
+                return
+            except (Exception) as e:
+                log.error('Duplicate message found ' + str(e.args))
+                log.error('sender_jid → ' + str(sender_jid) + ' sid => ' + str(
+                    sid))
+                return
+
+        except (DuplicateMessageException):
+            log.error('Duplicate message found ' + e.message)
+            log.error('sender_jid → ' + str(sender_jid) + ' sid => ' + str(
+                sid))
+            return
 
         result = decrypt(key, iv, payload)
 
         log.debug(u"Decrypted msg ⇒ " + result)
+
+        if self.own_jid == sender_jid:
+            self.add_own_device(sid)
+        else:
+            self.add_device(sender_jid, sid)
+
         return result
 
     def create_msg(self, from_jid, jid, plaintext):
@@ -278,6 +314,8 @@ class OmemoState:
             jid : string
                 The contacts jid
         """
+        if jid == self.own_jid:
+            return set(self.own_devices) - set({self.own_device_id})
         if jid not in self.device_ids:
             return set()
         return set(self.device_ids[jid])

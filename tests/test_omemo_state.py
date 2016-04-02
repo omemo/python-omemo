@@ -18,7 +18,19 @@ def db():
 
 @pytest.fixture
 def omemo_state(db):
-    return OmemoState(db)
+    romeo = "romeo@example.com"
+    return OmemoState(romeo, db)
+
+@pytest.fixture
+def romeo(db):
+    romeo = "romeo@example.com"
+    return OmemoState(romeo, db)
+
+@pytest.fixture
+def julia(db):
+    julia = "julia@example.com"
+    return OmemoState(julia, db)
+
 
 
 def test_omemo_state_creation(omemo_state):
@@ -29,9 +41,9 @@ def test_omemo_state_creation_fails():
         of a sqlite3.Connection.
     """
     with pytest.raises(AssertionError):
-        assert OmemoState("fooo")
+        assert OmemoState("fooo", "bar")
     with pytest.raises(AssertionError):
-        assert OmemoState(None)
+        assert OmemoState("asd", None)
 
 
 def test_own_devices(omemo_state):
@@ -40,7 +52,7 @@ def test_own_devices(omemo_state):
     assert len(omemo_state.own_devices) == 0
     assert isinstance(omemo_state.own_device_id, int)
     devices_update = [random.randint(0, sys.maxsize) for x in range(0,3)]
-    omemo_state.add_own_devices(devices_update) 
+    omemo_state.set_own_devices(devices_update) 
     assert len(omemo_state.own_devices) == 3
     assert omemo_state.own_devices == devices_update
 
@@ -57,54 +69,54 @@ def test_own_devices_accepts_list(omemo_state):
         :py:attribute:`own_devices` should accept a list as argument, but should
          not save duplicates
     """
-    omemo_state.add_own_devices([1, 2, 2, 1]) 
+    omemo_state.set_own_devices([1, 2, 2, 1]) 
     assert len(omemo_state.own_devices) == 2
 
 
 def test_own_device_id_published(omemo_state):
     """ :py:method:`OmemoState.own_device_id_published()` should return True
         only if own device id was added via
-        :py:method:`OmemoState.add_own_devices()`.
+        :py:method:`OmemoState.set_own_devices()`.
     """
     assert omemo_state.own_device_id_published() == False
-    omemo_state.add_own_devices([2,3,4,5]) 
+    omemo_state.set_own_devices([2,3,4,5]) 
     assert omemo_state.own_device_id_published() == False
-    omemo_state.add_own_devices([omemo_state.own_device_id]) 
+    omemo_state.set_own_devices([omemo_state.own_device_id]) 
     assert omemo_state.own_device_id_published() == True
 
 def test_add_device(omemo_state):
-    romeo = "romeo@example.com"
-    assert len(omemo_state.device_list_for(romeo)) == 0
-    omemo_state.add_devices(romeo, (1,2,3,4))
-    assert len(omemo_state.device_list_for(romeo)) == 4
-
     julia = "julia@example.com"
     assert len(omemo_state.device_list_for(julia)) == 0
+    omemo_state.set_devices(julia, (1,2,3,4))
+    assert len(omemo_state.device_list_for(julia)) == 4
+
+    montague = "montague@example.com"
+    assert len(omemo_state.device_list_for(montague)) == 0
 
 
 @pytest.mark.skipif(True, reason="NOT IMPLEMENTED")
 def test_device_list_tupple(omemo_state):
     name = "romeo@example.com"
-    omemo_state.add_devices(name, (1,2,3,4))
+    omemo_state.set_devices(name, (1,2,3,4))
     assert isinstance(omemo_state.device_list_for(name), tuple) 
 
 def test_device_list_duplicate_handling(omemo_state):
     """ Should not save duplicate device ids for the same user """
-    name = "romeo@example.com"
-    omemo_state.add_devices(name, [1,2,2,1])
+    name = "julia@example.com"
+    omemo_state.set_devices(name, [1,2,2,1])
     assert len(omemo_state.device_list_for(name)) == 2
 
 def test_own_devices_without_sessions(omemo_state):
     own_jid = "romeo@example.com"
     assert len(omemo_state.own_devices_without_sessions(own_jid)) == 0
-    omemo_state.add_own_devices([1,2,3,4])
+    omemo_state.set_own_devices([1,2,3,4])
     assert len(omemo_state.own_devices_without_sessions(own_jid)) == 4
     
 
 def test_own_devices_without_sessions(omemo_state):
     julia = "julia@example.com"
     assert len(omemo_state.devices_without_sessions(julia)) == 0
-    omemo_state.add_devices(julia, [1,2,3,4])
+    omemo_state.set_devices(julia, [1,2,3,4])
     assert len(omemo_state.devices_without_sessions(julia)) == 4
 
 def test_bundle(omemo_state):
@@ -121,10 +133,7 @@ def test_bundle(omemo_state):
     assert isinstance(bundle['signedPreKeySignature'], bytes)
 
 
-def test_build_session():
-    romeo = omemo_state(db())
-    julia = omemo_state(db())
-
+def test_build_session(romeo, julia):
     assert romeo
     assert julia
 
@@ -136,15 +145,14 @@ def test_build_session():
             bundle)
     assert isinstance(julias_session, SessionCipher)
 
-def test_create_message():
-    romeo = omemo_state(db())
-    julia = omemo_state(db())
+def test_create_message(romeo, julia):
     r_jid ="romeo@example.com"
     j_jid = "julia@example.com"
 
     romeo_device = romeo.own_device_id
 
     bundle = romeo.bundle
+    julia.set_devices(r_jid, [romeo_device])
     julia.build_session(r_jid, romeo_device, bundle)
     msg_dict = julia.create_msg(j_jid, r_jid, "Oh Romeo!")
     assert isinstance(msg_dict, dict)
@@ -156,15 +164,14 @@ def test_create_message():
         assert decodestring(key)
 
 
-def test_decrypt_message():
-    romeo = omemo_state(db())
-    julia = omemo_state(db())
+def test_decrypt_message(romeo, julia):
     r_jid ="romeo@example.com"
     j_jid = "julia@example.com"
 
     romeo_device = romeo.own_device_id
 
     bundle = romeo.bundle
+    julia.set_devices(r_jid, [romeo_device])
     julia.build_session(r_jid, romeo_device, bundle)
     msg_dict = julia.create_msg(j_jid, r_jid, "Oh Romeo!")
     msg_dict['sender_jid'] = j_jid

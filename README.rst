@@ -2,8 +2,6 @@
 Overview
 ========
 
-Warning: This library currently lacks behind the library used in gajim-omemo. If you plan on using this library right now please take a look at the lib directory on https://github.com/omemo/gajim-omemo/tree/master/lib/python-omemo
-
 .. start-badges
 
 .. list-table::

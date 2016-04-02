@@ -28,7 +28,7 @@ from .litesessionstore import LiteSessionStore
 from .litesignedprekeystore import LiteSignedPreKeyStore
 from .encryption import EncryptionState
 
-log = logging.getLogger('gajim.plugin_system.omemo')
+log = logging.getLogger('omemo')
 
 DEFAULT_PREKEY_AMOUNT = 100
 
@@ -93,6 +93,9 @@ class LiteAxolotlStore(AxolotlStore):
 
     def loadSession(self, recepientId, deviceId):
         return self.sessionStore.loadSession(recepientId, deviceId)
+
+    def getDeviceTuples(self):
+        return self.sessionStore.getDeviceTuples()
 
     def getSubDeviceSessions(self, recepientId):
         # TODO Reuse this
