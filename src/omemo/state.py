@@ -37,8 +37,8 @@ from axolotl.util.keyhelper import KeyHelper
 from .aes_gcm import NoValidSessions, decrypt, encrypt
 from .liteaxolotlstore import LiteAxolotlStore
 
-#log = logging.getLogger('omemo')
-log = logging.getLogger('gajim.plugin_system.omemo')
+log = logging.getLogger('omemo')
+
 
 # Monkey patch axolotl SessionCipher
 def s_decryptMsg(self, ciphertext):
@@ -100,6 +100,7 @@ class OmemoState:
                 self.add_device(jid, device_id)
 
         log.debug(self.own_jid + ': devices after boot:'+str(self.device_ids))
+
     def build_session(self, recipient_id, device_id, bundle_dict):
         sessionBuilder = SessionBuilder(self.store, self.store, self.store,
                                         self.store, recipient_id, device_id)

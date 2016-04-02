@@ -28,7 +28,7 @@ from .litesessionstore import LiteSessionStore
 from .litesignedprekeystore import LiteSignedPreKeyStore
 from .encryption import EncryptionState
 
-log = logging.getLogger('gajim.plugin_system.omemo')
+log = logging.getLogger('omemo')
 
 DEFAULT_PREKEY_AMOUNT = 100
 
