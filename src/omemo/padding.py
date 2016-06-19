@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2015 Bahtiar `kalkin-` Gadimov <bahtiar@gadimov.de>
+# Copyright 2016 Bob Mottram <bob@robotics.uk.to>
 #
 # This file is part of python-omemo library.
 #
@@ -19,31 +19,23 @@
 
 import os
 import sys
+from random import randint
 
-from omemo.padding import padding_add
-from omemo.padding import padding_remove
+def padding_add(plaintext):
+    # get the padding length
+    pad = 256
+    while len(plaintext) > pad:
+        pad = pad * 2
 
-try:
-    from omemo.aes_gcm_native import aes_decrypt
-    from omemo.aes_gcm_native import aes_encrypt
-except ImportError:
-    from omemo.aes_gcm_fallback import aes_decrypt
-    from omemo.aes_gcm_fallback import aes_encrypt
+    # create padding strings
+    pad_start = ' ' * randint(0, pad - len(plaintext))
+    pad_end = ' ' * (pad - len(pad_start) - len(plaintext))
 
+    # return padded plaintext
+    return pad_start + plaintext + pad_end
 
-def encrypt(plaintext):
-    key = os.urandom(16)
-    iv = os.urandom(16)
-    encoded_plaintext = padding_add(plaintext).encode()
-    return key, iv, aes_encrypt(key, iv, encoded_plaintext)
-
-
-def decrypt(key, iv, ciphertext):
-    plaintext = padding_remove(aes_decrypt(key, iv, ciphertext).decode('utf-8'))
-    if sys.version_info < (3, 0):
-        return unicode(plaintext)
-    else:
-        return plaintext
+def padding_remove(plaintext):
+    return plaintext.strip(' ')
 
 
 class NoValidSessions(Exception):
