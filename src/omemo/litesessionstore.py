@@ -54,12 +54,12 @@ class LiteSessionStore(SessionStore):
         return deviceIds
 
     def getDeviceTuples(self):
-       q = "SELECT recipient_id, device_id from sessions"
-       c = self.dbConn.cursor()
-       result = []
-       for row in c.execute(q):
-           result.append((row[0],row[1]))
-       return result 
+        q = "SELECT recipient_id, device_id from sessions"
+        c = self.dbConn.cursor()
+        result = []
+        for row in c.execute(q):
+            result.append((row[0], row[1]))
+        return result
 
     def storeSession(self, recipientId, deviceId, sessionRecord):
         self.deleteSession(recipientId, deviceId)
