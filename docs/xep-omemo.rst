@@ -20,7 +20,7 @@ Last Updated:
     approved in any official manner by the XMPP Standards Foundation, and this
     document is not yet an XMPP Extension Protocol (XEP). If this document is
     accepted as a XEP by the XMPP Council, it will be published at
-    <http://xmpp.org/extensions/> and announced on the <standards@xmpp.org>
+    <https://xmpp.org/extensions/> and announced on the <standards@xmpp.org>
     mailing list.
 
 1. Introduction
@@ -29,9 +29,9 @@ Last Updated:
 --------------
 There are two main end-to-end encryption schemes in common use in the XMPP
 ecosystem, Off-the-Record (OTR) messaging (`Current Off-the_Record Messaging
-Usage (XEP-0364) <http://xmpp.org/extensions/xep-0364.html>`_) and OpenPGP
+Usage (XEP-0364) <https://xmpp.org/extensions/xep-0364.html>`_) and OpenPGP
 (`Current Jabber OpenPGP Usage (XEP-0027)
-<http://xmpp.org/extensions/xep-0027.html>`_). OTR has significant usability
+<https://xmpp.org/extensions/xep-0027.html>`_). OTR has significant usability
 drawbacks for inter-client mobility. As OTR sessions exist between exactly two
 clients, the chat history will not be synchronized across other clients of the
 involved parties. Furthermore, OTR chats are only possible if both participants
@@ -64,13 +64,13 @@ once, reducing overhead. Furthermore, axolotl's transparent handling of messages
 that were lost or received out of order, as well as those sent while the
 recipient was offline, is maintained by this protocol. As a result, in
 combination with `Message Carbons (XEP-0280)
-<http://xmpp.org/extensions/xep-0280.html>`_ and `Message Archive Management
-(XEP-0313) <http://xmpp.org/extensions/xep-0313.html>`_, the desired property of
+<https://xmpp.org/extensions/xep-0280.html>`_ and `Message Archive Management
+(XEP-0313) <https://xmpp.org/extensions/xep-0313.html>`_, the desired property of
 inter-client history synchronization is achieved.
 
 OMEMO version 0 uses v3 messages of the axolotl protocol. Instead of an axolotl
 key server, PEP (`Personal Eventing Protocol (XEP-0163)
-<http://xmpp.org/extensions/xep-0163.html>`_) is used to publish key data. 
+<https://xmpp.org/extensions/xep-0163.html>`_) is used to publish key data. 
 
 2. Requirements
 ===============
@@ -356,7 +356,7 @@ session of the original sender will get overwritten with this newly created,
 valid session.
 
 If a PreKeyWhisperMessage is received as part of a `Message Archive Management
-(XEP-0313) <http://xmpp.org/extensions/xep-0313.html>`_ catch-up and used to establish a new session with the sender,
+(XEP-0313) <https://xmpp.org/extensions/xep-0313.html>`_ catch-up and used to establish a new session with the sender,
 the client SHOULD postpone deletion of the private key corresponding to the
 used PreKey until after MAM catch-up is completed. If this is done, the client
 MUST then also send a KeyTransportMessage using a PreKeyWhisperMessage before
@@ -366,9 +366,9 @@ message loss.
 
 As the asynchronous nature of OMEMO allows decryption at a later time to
 currently offline devices client SHOULD include a `Message Processing Hints
-(XEP-0334) <http://xmpp.org/extensions/xep-0334.html>`_ `<store />` hint in
+(XEP-0334) <https://xmpp.org/extensions/xep-0334.html>`_ `<store />` hint in
 their OMEMO messages. Otherwise, server implementations of `Message Archive
-Management (XEP-0313) <http://xmpp.org/extensions/xep-0313.html>`_ will
+Management (XEP-0313) <https://xmpp.org/extensions/xep-0313.html>`_ will
 generally not retain OMEMO messages, since they do not contain a `<body />`
 
 6. Implementation Notes
@@ -420,10 +420,10 @@ This specification defines the following XMPP namespaces:
 
     `urn:xmpp:omemo:0`
 
-The `XMPP Registrar <http://xmpp.org/registrar/>`_ shall include the foregoing
-namespace in its registry at <http://xmpp.org/registrar/namespaces.html>, as
+The `XMPP Registrar <https://xmpp.org/registrar/>`_ shall include the foregoing
+namespace in its registry at <https://xmpp.org/registrar/namespaces.html>, as
 goverened by `XMPP Registrar Function (XEP-0053)
-<http://xmpp.org/extensions/xep-0053.html>`_. 
+<https://xmpp.org/extensions/xep-0053.html>`_. 
 
 9.2 Protocol Versioning
 -----------------------
@@ -588,7 +588,7 @@ IPR Conformance
 ~~~~~~~~~~~~~~~
 This XMPP Extension Protocol has been contributed in full conformance with the
 XSF's Intellectual Property Rights Policy (a copy of which may be found at
-<http://xmpp.org/extensions/ipr-policy.shtml> or obtained by writing to XSF,
+<https://xmpp.org/extensions/ipr-policy.shtml> or obtained by writing to XSF,
 P.O. Box 1641, Denver, CO 80201 USA).
 
 Appendix D: Relation to XMPP
@@ -609,7 +609,7 @@ The primary venue for discussion of XMPP Extension Protocols is the
 <standards@xmpp.org> discussion list.
 
 Discussion on other xmpp.org discussion lists might also be appropriate; see
-<http://xmpp.org/about/discuss.shtml> for a complete list.
+<https://xmpp.org/about/discuss.shtml> for a complete list.
 
 Errata can be sent to <editor@xmpp.org>.
 
@@ -624,30 +624,30 @@ interpreted as described in RFC 2119: "MUST", "SHALL", "REQUIRED"; "MUST NOT",
 Appendix G: Notes
 -----------------
 
-1. XEP-0364: Current Off-the-Record Messaging Usage <http://xmpp.org/extensions/xep-0364.html>.
+1. XEP-0364: Current Off-the-Record Messaging Usage <https://xmpp.org/extensions/xep-0364.html>.
 
-2. XEP-0027: Current Jabber OpenPGP Usage <http://xmpp.org/extensions/xep-0027.html>.
+2. XEP-0027: Current Jabber OpenPGP Usage <https://xmpp.org/extensions/xep-0027.html>.
 
-3. XEP-0280: Message Carbons <http://xmpp.org/extensions/xep-0280.html>.
+3. XEP-0280: Message Carbons <https://xmpp.org/extensions/xep-0280.html>.
 
-4. XEP-0313: Message Archive Management <http://xmpp.org/extensions/xep-0313.html>.
+4. XEP-0313: Message Archive Management <https://xmpp.org/extensions/xep-0313.html>.
 
-5. XEP-0163: Personal Eventing Protocol <http://xmpp.org/extensions/xep-0163.html>.
+5. XEP-0163: Personal Eventing Protocol <https://xmpp.org/extensions/xep-0163.html>.
 
-6. XEP-0313: Message Archive Management <http://xmpp.org/extensions/xep-0313.html>.
+6. XEP-0313: Message Archive Management <https://xmpp.org/extensions/xep-0313.html>.
 
-7. XEP-0334: Message Processing Hints <http://xmpp.org/extensions/xep-0334.html>.
+7. XEP-0334: Message Processing Hints <https://xmpp.org/extensions/xep-0334.html>.
 
-8. XEP-0313: Message Archive Management <http://xmpp.org/extensions/xep-0313.html>.
+8. XEP-0313: Message Archive Management <https://xmpp.org/extensions/xep-0313.html>.
 
 9. Menezes, Alfred, and Berkant Ustaoglu. "On reusing ephemeral keys in Diffie-Hellman key agreement protocols." International Journal of Applied Cryptography 2, no. 2 (2010): 154-158.
 
-10. The XMPP Registrar maintains a list of reserved protocol namespaces as well as registries of parameters used in the context of XMPP extension protocols approved by the XMPP Standards Foundation. For further information, see <http://xmpp.org/registrar/>.
+10. The XMPP Registrar maintains a list of reserved protocol namespaces as well as registries of parameters used in the context of XMPP extension protocols approved by the XMPP Standards Foundation. For further information, see <https://xmpp.org/registrar/>.
 
-11. XEP-0053: XMPP Registrar Function <http://xmpp.org/extensions/xep-0053.html>.
+11. XEP-0053: XMPP Registrar Function <https://xmpp.org/extensions/xep-0053.html>.
 Appendix H: Revision History
 
-Note: Older versions of this specification might be available at http://xmpp.org/extensions/attic/
+Note: Older versions of this specification might be available at https://xmpp.org/extensions/attic/
 Version 0.0.1 (2015-10-25)
 
 First draft.
