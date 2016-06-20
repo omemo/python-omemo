@@ -17,11 +17,15 @@
 # the python-omemo library.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import os
-import sys
+''' Helper functions for padding plaintext '''
+
 from random import randint
 
+
 def padding_add(plaintext):
+    ''' Pad the text to a minimum of 255 characters, by adding random amount of
+        spaces before and after plaintext.
+    '''
     # get the padding length
     pad = 256
     while len(plaintext) > pad:
@@ -34,9 +38,7 @@ def padding_add(plaintext):
     # return padded plaintext
     return pad_start + plaintext + pad_end
 
+
 def padding_remove(plaintext):
+    ''' Strip the padding from plaintext '''
     return plaintext.strip(' ')
-
-
-class NoValidSessions(Exception):
-    pass
