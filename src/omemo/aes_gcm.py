@@ -34,7 +34,7 @@ except ImportError:
 def encrypt(plaintext):
     key = os.urandom(16)
     iv = os.urandom(16)
-    encoded_plaintext = padding_add(plaintext).encode()
+    encoded_plaintext = padding_add(plaintext).encode('utf-8')
     return key, iv, aes_encrypt(key, iv, encoded_plaintext)
 
 
